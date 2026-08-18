@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.next/
+out/
+build/
+
+# Environment — never commit real secrets. .env.example documents the shape.
+.env
+.env.*
+!.env.example
+
+# Locally uploaded files (dev storage adapter)
+storage/
+
+# Logs and caches
+*.log
+npm-debug.log*
+coverage/
+*.tsbuildinfo
+
+# Editors / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json

@@ -1,0 +1,6 @@
+# Formats staged files so nobody's diff is half whitespace and reviews stay
+# about the code. Runs from the repo root; harmless if you commit from a
+# subfolder.
+cd "$(git rev-parse --show-toplevel)" || exit 0
+[ -d node_modules ] || exit 0
+npx --no-install lint-staged
