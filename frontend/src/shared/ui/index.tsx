@@ -22,7 +22,7 @@ type ButtonVariant = 'primary' | 'secondary' | 'ghost';
 
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    'bg-slate-900 text-white hover:bg-slate-800 disabled:bg-slate-400 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white dark:disabled:bg-slate-700',
+    'bg-primary text-white hover:bg-primary-600 disabled:bg-slate-400 dark:bg-primary-100 dark:text-primary dark:hover:bg-white dark:disabled:bg-slate-700',
   secondary:
     'border border-slate-300 bg-white text-slate-900 hover:bg-slate-50 disabled:text-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800',
   ghost:
@@ -50,7 +50,7 @@ export function Button({
       disabled={disabled || isLoading}
       className={cx(
         'inline-flex h-11 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors',
-        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 dark:focus-visible:outline-slate-100',
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary dark:focus-visible:outline-primary-100',
         'disabled:cursor-not-allowed',
         BUTTON_VARIANTS[variant],
         fullWidth && 'w-full',
@@ -69,6 +69,43 @@ export function Button({
 }
 
 // ----------------------------------------------------------------- Field
+
+export interface FieldWrapperProps {
+  label: string;
+  error?: string;
+  hint?: ReactNode;
+  id?: string;
+  className?: string;
+  children?: ReactNode;
+  required?: boolean;
+}
+
+export function FieldWrapper({ label, error, hint, className, id, children }: FieldWrapperProps) {
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
+  const describedBy = error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined;
+
+  return (
+    <div className="space-y-1.5">
+      <label
+        htmlFor={inputId}
+        className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+      >
+        {label}
+      </label>
+      {children}
+      {error ? (
+        <p id={`${inputId}-error`} className="text-xs text-red-600 dark:text-red-400">
+          {error}
+        </p>
+      ) : hint ? (
+        <p id={`${inputId}-hint`} className="text-xs text-slate-500 dark:text-slate-400">
+          {hint}
+        </p>
+      ) : null}
+    </div>
+  );
+}
 
 // React 19 passes `ref` through as an ordinary prop, so ComponentProps is enough here.
 export interface FieldProps extends ComponentProps<'input'> {
@@ -97,7 +134,7 @@ export function Field({ label, error, hint, className, id, ...props }: FieldProp
         aria-describedby={describedBy}
         className={cx(
           'h-11 w-full rounded-lg border bg-white px-3 text-sm text-slate-900 outline-none transition-colors',
-          'placeholder:text-slate-400 focus:border-slate-900',
+          'placeholder:text-slate-400 focus:border-primary',
           'dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-300',
           error ? 'border-red-400 focus:border-red-500' : 'border-slate-300 dark:border-slate-700',
           'disabled:bg-slate-100 disabled:text-slate-500 dark:disabled:bg-slate-800',
@@ -157,8 +194,7 @@ export function Card({ children, className }: { children: ReactNode; className?:
   return (
     <div
       className={cx(
-        'rounded-xl border border-slate-200 bg-white p-6 shadow-sm',
-        'dark:border-slate-800 dark:bg-slate-900',
+        'rounded-lg border border-[#E6E8EC] bg-white p-4 sm:p-5 shadow-sm',
         className,
       )}
     >
@@ -174,7 +210,7 @@ export function Spinner({ label }: { label?: string }) {
     <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
       <span
         aria-hidden
-        className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-900 dark:border-slate-700 dark:border-t-slate-100"
+        className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-primary dark:border-slate-700 dark:border-t-primary-100"
       />
       <span>{label ?? 'Loading…'}</span>
     </div>
@@ -230,7 +266,7 @@ export function SelectField({
         aria-describedby={describedBy}
         className={cx(
           'h-11 w-full rounded-lg border bg-white px-3 text-sm text-slate-900 outline-none transition-colors',
-          'focus:border-slate-900 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-300',
+          'focus:border-primary dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-300',
           error ? 'border-red-400' : 'border-slate-300 dark:border-slate-700',
           className,
         )}
@@ -280,7 +316,7 @@ export function TextAreaField({ label, error, className, id, ...props }: TextAre
         aria-invalid={error ? true : undefined}
         className={cx(
           'w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-900 outline-none transition-colors',
-          'focus:border-slate-900 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-300',
+          'focus:border-primary dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-300',
           error ? 'border-red-400' : 'border-slate-300 dark:border-slate-700',
           className,
         )}

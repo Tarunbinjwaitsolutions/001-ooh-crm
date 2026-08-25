@@ -9,14 +9,29 @@ import fileRoutes from './core/files/files-routes.js';
 import { errorHandler, notFoundHandler } from './core/http/error-middleware.js';
 import notificationRoutes from './core/notifications/notifications-routes.js';
 import employeeRoutes from './modules/employees/employees.routes.js';
+import { attendanceRoutes } from './modules/HR/routes/attendance.routes.js';
+import { leaveRoutes } from './modules/HR/routes/leave.routes.js';
 
 const app = express();
 
 app.use(
   cors({
-    origin: config.cors.origins.includes('*') ? true : config.cors.origins,
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      
+      const isAllowed = 
+        config.cors.origins.includes('*') || 
+        config.cors.origins.includes(origin) ||
+        /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+):\d+$/.test(origin);
+        
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
-  }),
+  })
 );
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -46,11 +61,28 @@ app.use('/api/auth', authRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/files', fileRoutes);
 
+import { leadRoutes } from './modules/leads/leads.routes.js';
+
+import { vendorRoutes } from './modules/vendors/vendors.routes.js';
+import { siteRoutes } from './modules/sites/sites.routes.js';
+import { campaignRoutes } from './modules/campaigns/campaigns.routes.js';
+import { purchaseOrderRoutes } from './modules/purchase-orders/purchase-orders.routes.js';
+
 // --- Modules ------------------------------------------------------------------
 // G1 — the reference module. Copy its structure.
 app.use('/api/employees', employeeRoutes);
-// Mount your module router here, e.g.
-//   app.use('/api/leads', leadRoutes);
+app.use('/api/leads', leadRoutes);
+app.use('/api/vendors', vendorRoutes);
+app.use('/api/sites', siteRoutes);
+app.use('/api/campaigns', campaignRoutes);
+app.use('/api/purchase-orders', purchaseOrderRoutes);
+
+//attendance
+app.use('/api/attendance', attendanceRoutes);
+
+//leave
+app.use('/api/leave', leaveRoutes);
+
 
 // 404 then the central error handler — both must stay last.
 app.use(notFoundHandler);

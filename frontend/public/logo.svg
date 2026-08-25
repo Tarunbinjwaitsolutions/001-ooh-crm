@@ -1,0 +1,5 @@
+<svg width="200" height="40" viewBox="0 0 200 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M20 10L10 20L20 30L30 20L20 10Z" stroke="#6E1D1D" stroke-width="2"/>
+  <path d="M15 15L20 20L25 15" stroke="#6E1D1D" stroke-width="2"/>
+  <text x="40" y="26" font-family="Arial, sans-serif" font-weight="bold" font-size="18" fill="#6E1D1D">MEDIA OCTUS</text>
+</svg>
