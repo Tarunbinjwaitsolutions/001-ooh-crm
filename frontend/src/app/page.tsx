@@ -17,7 +17,7 @@ export default function Home() {
   }, [isLoading, isAuthenticated, router]);
 
   return (
-    <div className="flex flex-1 items-center justify-center bg-slate-50 dark:bg-slate-950">
+    <div className="flex flex-1 items-center justify-center bg-white">
       <Spinner />
     </div>
   );

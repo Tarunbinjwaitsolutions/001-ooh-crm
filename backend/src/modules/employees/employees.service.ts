@@ -94,10 +94,10 @@ function toDto(employee: IEmployee, includeSensitive: boolean): EmployeeDto {
     dateOfExit: iso(employee.dateOfExit),
     reportingManager: managerIsPopulated
       ? {
-          id: String((manager as IEmployee)._id),
-          fullName: (manager as IEmployee).fullName,
-          designation: (manager as IEmployee).designation,
-        }
+        id: String((manager as IEmployee)._id),
+        fullName: (manager as IEmployee).fullName,
+        designation: (manager as IEmployee).designation,
+      }
       : null,
     workLocation: employee.workLocation,
     status: employee.status,
@@ -324,7 +324,7 @@ export const employeeService = {
     if (reportCount > 0) {
       throw new ConflictError(
         `${reportCount} employee${reportCount === 1 ? '' : 's'} still ` +
-          `${reportCount === 1 ? 'reports' : 'report'} to this person. Reassign them first.`,
+        `${reportCount === 1 ? 'reports' : 'report'} to this person. Reassign them first.`,
       );
     }
 

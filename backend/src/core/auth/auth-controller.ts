@@ -11,6 +11,7 @@ import {
   resendOtpSchema,
   verifyOtpSchema,
 } from './auth-validator.js';
+import { auditService } from '../audit/index.js';
 
 /**
  * Controllers parse the request, call the service and shape the response.
@@ -83,6 +84,16 @@ export class AuthController {
   static async logout(req: Request, res: Response) {
     const input = logoutSchema.parse(req.body ?? {});
     await AuthService.logout(input.refreshToken, req.ctx?.user.id);
+
+    if (req.ctx) {
+      void auditService.record({
+        action: 'logout',
+        entity: 'Auth',
+        ctx: req.ctx,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+      });
+    }
 
     res.status(200).json({ message: 'Signed out' });
   }

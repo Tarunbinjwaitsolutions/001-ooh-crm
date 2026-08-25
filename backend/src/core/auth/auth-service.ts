@@ -12,6 +12,7 @@ import {
   UnauthorizedError,
   ValidationError,
 } from '../errors/index.js';
+import { auditService } from '../audit/index.js';
 import { sendOtpEmail } from '../notifications/index.js';
 import { permissionsForRole, type Role } from '../rbac/permissions.js';
 import { AuthUser, type IUser } from './auth-model.js';
@@ -210,17 +211,28 @@ export class AuthService {
       '+passwordHash',
     );
 
+    const recordFailedLogin = () => {
+      void auditService.record({
+        action: 'login_failed',
+        entity: 'Auth',
+        actorEmail: email,
+      });
+    };
+
     // Identical message either way — never reveal whether an email is registered.
     if (!user) {
+      recordFailedLogin();
       throw new UnauthorizedError('Invalid email or password');
     }
 
     const passwordMatches = await bcrypt.compare(passwordPlain, user.passwordHash);
     if (!passwordMatches) {
+      recordFailedLogin();
       throw new UnauthorizedError('Invalid email or password');
     }
 
     if (user.status !== 'Active' || user.deletedAt) {
+      recordFailedLogin();
       throw new UnauthorizedError('This account is inactive. Contact your administrator.');
     }
 
@@ -306,6 +318,12 @@ export class AuthService {
 
     user.lastLoginAt = new Date();
     await user.save();
+
+    void auditService.record({
+      action: 'login',
+      entity: 'Auth',
+      actorEmail: user.email,
+    });
 
     return AuthService.createSession(user, meta);
   }
