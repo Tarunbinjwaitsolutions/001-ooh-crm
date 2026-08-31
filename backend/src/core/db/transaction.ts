@@ -1,48 +1,48 @@
-import mongoose, { ClientSession } from 'mongoose';
+import mongoose from 'mongoose';
 
 /**
- * Execute an operation within a MongoDB transaction if transactions are supported
- * by the deployment (replica set or mongos). If the deployment is standalone
- * (which throws "does not support retryable writes" or "Transaction numbers are only allowed on a replica set member"),
- * it gracefully falls back to executing the operation without a transaction session.
+ * Runs `fn` inside a MongoDB transaction when the connection supports
+ * transactions (replica-set or Atlas), or without a session when it does not
+ * (e.g. standalone dev MongoDB).
+ *
+ * Usage:
+ *   return withOptionalTransaction(async (session) => {
+ *     await Doc.create([...], { session });
+ *   });
  */
 export async function withOptionalTransaction<T>(
-  fn: (session?: ClientSession) => Promise<T>,
+  fn: (session: mongoose.ClientSession | undefined) => Promise<T>
 ): Promise<T> {
-  let session: ClientSession | null = null;
+  let session: mongoose.ClientSession | undefined;
 
   try {
     session = await mongoose.startSession();
-    let result: T | undefined;
-
-    await session.withTransaction(async () => {
-      result = await fn(session!);
-    });
-
-    return result as T;
-  } catch (error: any) {
-    const isUnsupported =
-      error?.message?.includes('retryable writes') ||
-      error?.message?.includes('replica set') ||
-      error?.message?.includes('Transaction numbers') ||
-      error?.message?.includes('standalone') ||
-      error?.codeName === 'IllegalOperation' ||
-      error?.code === 20;
-
-    if (isUnsupported) {
-      // Execute directly without a transaction session for standalone local MongoDB
-      return await fn(undefined);
+    session.startTransaction();
+    const result = await fn(session);
+    await session.commitTransaction();
+    return result;
+  } catch (err) {
+    // If transactions are not supported (standalone), fall back to no session
+    const errMsg = (err as Error).message ?? '';
+    if (
+      errMsg.includes('Transaction numbers are only allowed') ||
+      errMsg.includes('does not support transactions') ||
+      errMsg.includes('not supported') ||
+      errMsg.includes('MongoServerError')
+    ) {
+      if (session) {
+        try { await session.abortTransaction(); } catch { /* ignore */ }
+      }
+      // Retry without a transaction
+      return fn(undefined);
     }
-
-    throw error;
+    if (session) {
+      try { await session.abortTransaction(); } catch { /* ignore */ }
+    }
+    throw err;
   } finally {
     if (session) {
-      try {
-        await session.endSession();
-      } catch {
-        // Ignore session cleanup errors
-      }
+      session.endSession();
     }
   }
 }
-
