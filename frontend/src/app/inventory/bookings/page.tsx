@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 
-import { useBooking } from "@/modules/inventory/bookings/hooks/useBooking";
+import { useBooking } from "@/modules/bookings/hooks/useBooking";
 
-import type { AvailableSite } from "@/modules/inventory/bookings/types";
+import type { AvailableSite } from "@/modules/bookings/types";
 
-import AvailabilitySearch from "@/modules/inventory/bookings/components/AvailabilitySearch";
+import AvailabilitySearch from "@/modules/bookings/components/AvailabilitySearch";
 
-import AvailabilityTable from "@/modules/inventory/bookings/components/AvailabilityTable";
+import AvailabilityTable from "@/modules/bookings/components/AvailabilityTable";
 
-import BookingForm from "@/modules/inventory/bookings/components/BookingForm";
+import BookingForm from "@/modules/bookings/components/BookingForm";
 
 export default function AvailabilityPage() {
   const {

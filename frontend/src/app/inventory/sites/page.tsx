@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 
-import { useSites } from "@/modules/inventory/sites/hooks/useSites";
+import { useSites } from "@/modules/sites/hooks/useSites";
 
-import type { Site } from "@/modules/inventory/sites/types";
+import type { Site } from "@/modules/sites/types";
 
-import SiteFilters from "@/modules/inventory/sites/components/SiteFilters";
+import SiteFilters from "@/modules/sites/components/SiteFilters";
 
-import SiteTable from "@/modules/inventory/sites/components/SiteTable";
+import SiteTable from "@/modules/sites/components/SiteTable";
 
-import SiteForm from "@/modules/inventory/sites/components/SiteForm";
+import SiteForm from "@/modules/sites/components/SiteForm";
 
 export default function SitesPage() {
 

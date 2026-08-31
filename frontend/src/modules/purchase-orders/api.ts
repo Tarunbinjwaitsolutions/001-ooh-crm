@@ -3,19 +3,19 @@ import type { PurchaseOrder, PurchaseOrdersResponse, POStatus } from './types';
 
 export const purchaseOrdersApi = {
   getPurchaseOrders: async (params?: Record<string, string>): Promise<PurchaseOrdersResponse> => {
-    const qs = params ? '?' + new URLSearchParams(params).toString() : ''; return client.get<PurchaseOrdersResponse>('/purchase-orders' + qs);
+    const qs = params ? '?' + new URLSearchParams(params).toString() : ''; return client.get<PurchaseOrdersResponse>('/api/purchase-orders' + qs);
   },
 
   getPurchaseOrder: async (id: string): Promise<PurchaseOrder> => {
-    return client.get<PurchaseOrder>(`/purchase-orders/${id}`);
+    return client.get<PurchaseOrder>(`/api/purchase-orders/${id}`);
   },
 
   createPurchaseOrder: async (data: any): Promise<PurchaseOrder> => {
-    return client.post<PurchaseOrder>('/purchase-orders', data);
+    return client.post<PurchaseOrder>('/api/purchase-orders', data);
   },
 
   updateStatus: async (id: string, status: POStatus): Promise<PurchaseOrder> => {
-    return client.patch<PurchaseOrder>(`/purchase-orders/${id}/status`, { status });
+    return client.patch<PurchaseOrder>(`/api/purchase-orders/${id}/status`, { status });
   },
 
   downloadPDF: async (id: string): Promise<Blob> => {

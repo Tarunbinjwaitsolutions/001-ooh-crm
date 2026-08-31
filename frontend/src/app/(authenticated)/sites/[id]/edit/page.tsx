@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import { useSite } from '@/modules/sites/hooks/use-sites';
-import { SiteForm } from '@/modules/sites/components/site-form';
+import SiteForm from '@/modules/sites/components/SiteForm';
 import { Spinner } from '@/shared/ui';
 
 export default function EditSitePage() {
@@ -19,7 +19,7 @@ export default function EditSitePage() {
         <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Edit Site</h1>
         <p className="text-sm text-slate-500">Update site details.</p>
       </div>
-      <SiteForm initialData={site} />
+      <SiteForm site={site} onClose={() => {}} onSuccess={() => {}} />
     </div>
   );
 }

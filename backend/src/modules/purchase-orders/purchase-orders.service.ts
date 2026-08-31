@@ -40,7 +40,7 @@ export class PurchaseOrdersService {
     const po = await PurchaseOrder.findOne({ _id: toObjectId(id), deletedAt: null })
       .populate('campaignId', 'name')
       .populate('vendorId', 'name city contactPerson email mobile address gstNumber paymentTerms')
-      .populate('sites.siteId', 'siteCode city address baseCostPerDay type')
+      .populate('sites.siteId', 'code city address baseCostPerDay type')
       .exec();
     
     if (!po) throw new NotFoundError('PO not found');
@@ -123,7 +123,7 @@ export class PurchaseOrdersService {
       doc.text('Sites:', { underline: true });
       doc.moveDown();
       po.sites.forEach((site: any) => {
-        doc.text(`- ${site.siteId.siteCode} (${site.siteId.city}): ₹${site.negotiatedRate}`);
+        doc.text(`- ${site.siteId.code} (${site.siteId.city}): ₹${site.negotiatedRate}`);
       });
       doc.moveDown();
       doc.fontSize(14).font('Helvetica-Bold').text(`Total Amount: ₹${po.totalAmount}`);

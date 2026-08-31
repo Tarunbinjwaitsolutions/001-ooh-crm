@@ -2,19 +2,19 @@
 
 import { useMemo, useState } from "react";
 
-import VendorFilters from "@/modules/inventory/vendors/components/VendorFilters";
-import VendorTable from "@/modules/inventory/vendors/components/VendorTable";
-import VendorForm from "@/modules/inventory/vendors/components/VendorForm";
-import VendorDetails from "@/modules/inventory/vendors/components/VendorDetails";
-import VendorSitesModal from "@/modules/inventory/vendors/components/VendorSitesModal";
+import VendorFilters from "@/modules/vendors/components/VendorFilters";
+import VendorTable from "@/modules/vendors/components/VendorTable";
+import VendorForm from "@/modules/vendors/components/VendorForm";
+import VendorDetails from "@/modules/vendors/components/VendorDetails";
+import VendorSitesModal from "@/modules/vendors/components/VendorSitesModal";
 
-import { useVendors } from "@/modules/inventory/vendors/hooks/useVendors";
+import { useVendors } from "@/modules/vendors/hooks/useVendors";
 
 import type {
   Vendor,
   VendorFormData,
   VendorSite,
-} from "@/modules/inventory/vendors/types";
+} from "@/modules/vendors/types";
 
 export default function VendorsPage() {
   const {
