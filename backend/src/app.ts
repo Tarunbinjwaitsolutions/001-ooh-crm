@@ -67,6 +67,7 @@ import { vendorRoutes } from './modules/vendors/vendors.routes.js';
 import { siteRoutes } from './modules/sites/sites.routes.js';
 import { campaignRoutes } from './modules/campaigns/campaigns.routes.js';
 import { purchaseOrderRoutes } from './modules/purchase-orders/purchase-orders.routes.js';
+import quotationsRoutes, { publicQuotationsRoutes } from './modules/quotations/quotations.routes.js';
 
 // --- Modules ------------------------------------------------------------------
 // G1 — the reference module. Copy its structure.
@@ -76,6 +77,8 @@ app.use('/api/vendors', vendorRoutes);
 app.use('/api/sites', siteRoutes);
 app.use('/api/campaigns', campaignRoutes);
 app.use('/api/purchase-orders', purchaseOrderRoutes);
+app.use('/api/quotations', quotationsRoutes);
+app.use('/q', publicQuotationsRoutes);
 
 //attendance
 app.use('/api/attendance', attendanceRoutes);
