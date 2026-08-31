@@ -4,18 +4,62 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useLeads } from '@/modules/leads/hooks/use-leads';
 import { leadsApi } from '@/modules/leads/api';
-import { LeadStatus, LeadSource, Lead } from '@/modules/leads/types';
+import { LeadStatus, LeadSource, Lead, LogCallValues } from '@/modules/leads/types';
 import { Card, Button, Badge, Spinner, Field, SelectField, Alert } from '@/shared/ui';
+import LogCallModal from '@/modules/leads/component/log-call-modal';
+
+const STATUS_STYLES: Record<string, string> = {
+  New: 'border-sky-200 bg-sky-50 text-sky-700',
+  Contacted: 'border-amber-200 bg-amber-50 text-amber-700',
+  Interested: 'border-cyan-200 bg-cyan-50 text-cyan-700',
+  Qualified: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  'Proposal Sent': 'border-indigo-200 bg-indigo-50 text-indigo-700',
+  Negotiation: 'border-orange-200 bg-orange-50 text-orange-700',
+  Won: 'border-green-200 bg-green-50 text-green-700',
+  Lost: 'border-rose-200 bg-rose-50 text-rose-700',
+  Duplicate: 'border-red-200 bg-red-50 text-red-700',
+  duplicate: 'border-red-200 bg-red-50 text-red-700',
+};
+
+function StatusBadge({ status }: { status: LeadStatus }) {
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${
+        STATUS_STYLES[status] ?? 'border-red-200 bg-red-50 text-red-700'
+      }`}
+    >
+      {status}
+    </span>
+  );
+}
+
+function SlaCountdown({ end }: { end?: string | null }) {
+  const [now, setNow] = useState(Date.now());
+
+  if (!end) return null;
+  const endMs = new Date(end).getTime();
+  const diff = endMs - now;
+  if (diff <= 0) return <span className="ml-2 text-xs font-semibold text-red-500">SLA Breach</span>;
+  const minutes = Math.floor(diff / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+  return <span className="ml-2 text-xs text-[#8B2424]">{minutes}m {String(seconds).padStart(2, '0')}s</span>;
+}
 
 export default function LeadsPage() {
   const [activeTab, setActiveTab] = useState<'my-leads' | 'unclaimed' | 'all'>('my-leads');
-  
+
   // Filters
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<LeadStatus | ''>('');
   const [city, setCity] = useState('');
   const [source, setSource] = useState<LeadSource | ''>('');
   const [page, setPage] = useState(1);
+
+  const [claimedIds, setClaimedIds] = useState<string[]>([]);
+  const [toastList, setToastList] = useState<Array<{ id: number; message: string; type?: 'success' | 'error' }>>([]);
+
+  const [logModalOpen, setLogModalOpen] = useState(false);
+  const [logTargetId, setLogTargetId] = useState<string | null>(null);
 
   const filters = {
     search,
@@ -28,21 +72,52 @@ export default function LeadsPage() {
     ...(activeTab === 'my-leads' ? { assignedToMe: true } : {}),
   };
 
-  // Poll every 15s if we are on the unclaimed tab
   const pollInterval = activeTab === 'unclaimed' ? 15000 : undefined;
-  
+
   const { data, isLoading, error, mutate } = useLeads(filters, pollInterval);
 
+  function showToast(message: string, type: 'success' | 'error' = 'success') {
+    const id = Date.now() + Math.floor(Math.random() * 1000);
+    setToastList((t) => [...t, { id, message, type }]);
+    setTimeout(() => setToastList((t) => t.filter((x) => x.id !== id)), 4500);
+  }
+
   const handleClaim = async (leadId: string) => {
+    setClaimedIds((s) => Array.from(new Set([...s, leadId])));
     try {
       await leadsApi.claimLead(leadId);
-      mutate();
+      showToast('Lead claimed', 'success');
+      await mutate();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Another agent has already claimed this lead.';
-      alert(`Conflict: ${msg}`);
-      mutate(); // refresh to show it's gone
+      setClaimedIds((s) => s.filter((id) => id !== leadId));
+      try {
+        const current = await leadsApi.getLead(leadId);
+        const claimer = (current as any).assignedTo?.name || (current as any).claimedBy?.name;
+        showToast(claimer ? `Already claimed by ${claimer}` : 'Conflict: Another agent claimed this lead', 'error');
+      } catch {
+        showToast('Conflict: Another agent has already claimed this lead.', 'error');
+      }
+      await mutate();
     }
   };
+
+  const openLogModal = (leadId: string) => {
+    setLogTargetId(leadId);
+    setLogModalOpen(true);
+  };
+
+  const submitLogFollowUp = async (payload: LogCallValues) => {
+    if (!logTargetId) return;
+    try {
+      await leadsApi.logFollowUp(logTargetId, payload);
+      showToast('Action record saved', 'success');
+      await mutate();
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : 'Failed to save action', 'error');
+    }
+  };
+
+  const displayedLeads = (data?.data ?? []).filter((l) => !claimedIds.includes(l._id || l.id));
 
   return (
     <div className="space-y-6 py-8">
@@ -87,7 +162,7 @@ export default function LeadsPage() {
         </button>
       </div>
 
-      <Card className="flex items-end gap-4 p-4">
+      <Card className="grid grid-cols-1 gap-8 p-6 md:grid-cols-2 xl:grid-cols-4">
         <Field
           label="Search"
           placeholder="Company or Mobile"
@@ -151,51 +226,88 @@ export default function LeadsPage() {
                   <th className="px-4 py-3 font-medium">Company</th>
                   <th className="px-4 py-3 font-medium">Contact</th>
                   <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Next Action</th>
                   <th className="px-4 py-3 font-medium">Source</th>
                   <th className="px-4 py-3 font-medium">Agent</th>
                   <th className="px-4 py-3 font-medium">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                {data?.data.map((lead: Lead) => (
-                  <tr key={lead._id || lead.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-slate-900 dark:text-white">
-                        <Link href={`/leads/${lead._id || lead.id}`} className="hover:underline">
-                          {lead.companyName}
-                        </Link>
-                      </div>
-                      <div className="text-xs">{lead.city}</div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div>{lead.contactPerson}</div>
-                      <div className="text-xs">{lead.mobile}</div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge>{lead.status}</Badge>
-                      {lead.slaTimerEnd && new Date(lead.slaTimerEnd) < new Date() && (
-                        <span className="ml-2 text-xs text-red-500 font-semibold">SLA Breach</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">{lead.source}</td>
-                    <td className="px-4 py-3">{lead.assignedTo?.name || 'Unassigned'}</td>
-                    <td className="px-4 py-3">
-                      {activeTab === 'unclaimed' ? (
-                        <Button variant="secondary" onClick={() => handleClaim(lead._id || lead.id)}>
-                          Claim
-                        </Button>
-                      ) : (
-                        <Link href={`/leads/${lead._id || lead.id}`}>
-                          <Button variant="ghost">View</Button>
-                        </Link>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                {displayedLeads.map((lead: Lead) => {
+                  const isOverdue = lead.nextActionDate && new Date(lead.nextActionDate).getTime() < Date.now();
+
+                  return (
+                    <tr key={lead._id || lead.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-slate-900 dark:text-white">
+                          <Link href={`/leads/${lead._id || lead.id}`} className="hover:underline">
+                            {lead.companyName}
+                          </Link>
+                        </div>
+                        <div className="text-xs">{lead.city}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div>{lead.contactPerson}</div>
+                        <div className="text-xs">{lead.mobile}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <StatusBadge status={lead.status} />
+                        {<SlaCountdown end={lead.slaTimerEnd} />}
+                      </td>
+                      <td className="px-4 py-3">
+                        {lead.nextActionDate ? (
+                          <span
+                            className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${
+                              isOverdue
+                                ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
+                                : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                            }`}
+                          >
+                            {new Date(lead.nextActionDate).toLocaleDateString()}
+                            {isOverdue && ' (Overdue)'}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-slate-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">{lead.source}</td>
+                      <td className="px-4 py-3">{lead.assignedTo?.name || lead.claimedBy?.name || 'Unassigned'}</td>
+                      <td className="px-4 py-3">
+                        {activeTab === 'unclaimed' ? (
+                          <div className="flex items-center gap-2">
+                            <Button variant="secondary" onClick={() => handleClaim(lead._id || lead.id)}>
+                              Claim
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              className="bg-[#F9DADA] text-[#6E1D1D] hover:bg-[#F2CACA]"
+                              onClick={() => openLogModal(lead._id || lead.id)}
+                            >
+                              Log Action
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <Link href={`/leads/${lead._id || lead.id}`}>
+                              <Button variant="ghost">View</Button>
+                            </Link>
+                            <Button
+                              variant="ghost"
+                              className="bg-[#F9DADA] text-[#6E1D1D] hover:bg-[#F2CACA]"
+                              onClick={() => openLogModal(lead._id || lead.id)}
+                            >
+                              Log Action
+                            </Button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
-          
+
           {/* Pagination */}
           {data && data.meta.total > data.meta.limit && (
             <div className="flex items-center justify-between border-t border-slate-200 px-4 py-3 dark:border-slate-800">
@@ -222,6 +334,18 @@ export default function LeadsPage() {
           )}
         </div>
       )}
+
+      {/* Log Action Modal */}
+      <LogCallModal open={logModalOpen} onClose={() => setLogModalOpen(false)} onSubmit={submitLogFollowUp} />
+
+      {/* Toasts */}
+      <div className="fixed right-6 bottom-6 flex flex-col gap-2">
+        {toastList.map((t) => (
+          <div key={t.id} className={`rounded px-3 py-2 text-sm ${t.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'}`}>
+            {t.message}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
