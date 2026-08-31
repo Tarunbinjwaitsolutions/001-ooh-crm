@@ -7,10 +7,21 @@ export class CampaignsService {
     return Campaign.find({ deletedAt: null }).sort({ createdAt: -1 }).lean().exec();
   }
 
-  static async createCampaign(data: { name: string }, ctx: RequestContext): Promise<ICampaign> {
+  static async createCampaign(data: { name: string }, ctx?: RequestContext): Promise<ICampaign> {
     return Campaign.create({
       ...data,
-      createdBy: toObjectId(ctx.user.id),
+      createdBy: ctx?.user?.id ? toObjectId(ctx.user.id) : null,
+    });
+  }
+
+  static async createFromQuotation(
+    quotationId: string,
+    ctx?: RequestContext,
+  ): Promise<ICampaign> {
+    return Campaign.create({
+      name: `Campaign from Quote ${quotationId}`,
+      status: 'Draft',
+      createdBy: ctx?.user?.id ? toObjectId(ctx.user.id) : null,
     });
   }
 }
