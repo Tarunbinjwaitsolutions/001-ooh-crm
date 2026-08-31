@@ -90,6 +90,7 @@ export const PERMISSIONS = [
   'attendance.view_team',
   'leave.self',
   'leave.manage',
+  'holiday.manage',
 
   // Track H — Audit
   'audit.view',

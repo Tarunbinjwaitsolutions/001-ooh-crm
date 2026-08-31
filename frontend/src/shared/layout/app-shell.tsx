@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { type ReactNode, useState } from 'react';
 import {
   LayoutDashboard,
@@ -20,7 +20,6 @@ import {
   TrendingUp,
   Clock,
   CalendarDays,
-  FileBarChart,
   ShieldCheck,
   AlertTriangle,
   Search,
@@ -29,6 +28,7 @@ import {
   X,
   LogOut,
   ChevronDown
+  ,ArrowLeft
 } from 'lucide-react';
 
 import { useAuth } from '../auth/auth-context';
@@ -78,12 +78,8 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'HR',
     items: [
       { href: '/employees', label: 'Employees', icon: Users, permission: 'employees.view' },
-      { href: '/attendance', label: 'My Attendance', icon: Clock, permission: 'attendance.view' },
-      { href: '/attendance/team', label: 'Team Attendance', icon: Users, permission: 'attendance.view_team' },
-      { href: '/attendance/reports', label: 'Attendance Reports', icon: FileBarChart, permission: 'attendance.view_team' },
-      { href: '/leave', label: 'My Leave', icon: CalendarDays, permission: 'leave.view' },
-      { href: '/leave/approvals', label: 'Leave Approvals', icon: CalendarCheck, permission: 'leave.approve' },
-      { href: '/leave/types', label: 'Leave Types', icon: CalendarCheck, permission: 'leave.admin' },
+      { href: '/attendance', label: 'Attendance', icon: Clock, permission: 'attendance.self' },
+      { href: '/leave', label: 'Leave', icon: CalendarDays, permission: 'leave.self' },
     ],
   },
   {
@@ -97,8 +93,22 @@ const NAV_GROUPS: NavGroup[] = [
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, hasPermission, signOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const pageTitle = pathname.startsWith('/leave/types')
+    ? 'Leave Types'
+    : pathname.startsWith('/leave/approvals')
+      ? 'Leave Approvals'
+    : pathname.startsWith('/leave/calendar')
+      ? 'Holiday Calendar'
+    : pathname.startsWith('/leave')
+      ? 'Leave Management'
+      : pathname.startsWith('/attendance')
+        ? 'Attendance'
+        : pathname === '/dashboard'
+          ? 'Dashboard'
+          : 'Workspace';
 
   return (
     <div className="min-h-screen bg-white font-sans">
@@ -184,6 +194,18 @@ export function AppShell({ children }: { children: ReactNode }) {
         {/* Header (Sticky) */}
         <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between gap-x-4 border-b border-[#E6E8EC] bg-white px-4 sm:gap-x-6 sm:px-6 lg:px-8">
           <div className="flex items-center gap-4">
+            {pathname !== '/dashboard' && (
+              <button
+                type="button"
+                className="hidden items-center gap-2 text-sm text-slate-500 hover:text-primary lg:flex"
+                onClick={() => router.back()}
+                title="Go back"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span className="sr-only">Go back</span>
+              </button>
+            )}
+            <h1 className="hidden text-sm font-semibold text-slate-800 sm:block">{pageTitle}</h1>
             <button
               type="button"
               className="-m-2.5 p-2.5 text-slate-700 lg:hidden"
@@ -195,7 +217,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
 
           <div className="flex flex-1 justify-end gap-x-4 lg:gap-x-6">
-            <form className="relative flex max-w-md w-full items-center mr-auto ml-4 lg:ml-0" action="#" method="GET" onSubmit={(e) => e.preventDefault()}>
+            <form className="relative flex max-w-sm w-full items-center mr-auto ml-4 lg:ml-0" action="#" method="GET" onSubmit={(e) => e.preventDefault()}>
               <label htmlFor="search-field" className="sr-only">
                 Search
               </label>
