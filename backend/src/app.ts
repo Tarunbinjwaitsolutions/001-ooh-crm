@@ -71,6 +71,7 @@ import taskRoutes from './modules/tasks/task.routes.js';
 import escalationRoutes from './modules/escalations/escalation.routes.js';
 
 import { purchaseOrderRoutes } from './modules/purchase-orders/purchase-orders.routes.js';
+import quotationsRoutes, { publicQuotationsRoutes } from './modules/quotations/quotations.routes.js';
 
 // --- Modules ------------------------------------------------------------------
 // G1 — the reference module. Copy its structure.
@@ -85,6 +86,8 @@ app.use('/api', escalationRoutes);
 
 app.use('/api/purchase-orders', purchaseOrderRoutes);
 app.use('/api', bookingRoutes);
+app.use('/api/quotations', quotationsRoutes);
+app.use('/q', publicQuotationsRoutes);
 
 //attendance
 app.use('/api/attendance', attendanceRoutes);

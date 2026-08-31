@@ -376,3 +376,39 @@ export function EmptyState({
     </div>
   );
 }
+
+// --------------------------------------------------------------- Modal
+
+export function Modal({
+  open,
+  onClose,
+  title,
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  title?: string;
+  children: ReactNode;
+}) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+        {title && (
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 mb-4">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
+            <button
+              onClick={onClose}
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg leading-none"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+        {children}
+      </div>
+    </div>
+  );
+}
+
