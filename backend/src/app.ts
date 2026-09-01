@@ -93,8 +93,14 @@ app.use('/q', publicQuotationsRoutes);
 //attendance
 app.use('/api/attendance', attendanceRoutes);
 
+import { reportsRoutes } from './modules/HR/routes/reports.routes.js';
+app.use('/api/reports', reportsRoutes);
+
 //leave
 app.use('/api/leave', leaveRoutes);
+
+import candidateRoutes from './modules/candidates/candidates.routes.js';
+app.use('/api/candidates', candidateRoutes);
 
 
 // 404 then the central error handler — both must stay last.
