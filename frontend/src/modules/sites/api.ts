@@ -1,35 +1,74 @@
-import { api as client } from '../../shared/api/client';
-import type { Site, SitesResponse, Booking } from './types';
+import { api } from "@/shared/api/client";
+
+import type {
+  CreateSiteData,
+  Site,
+} from "./types";
+
+export async function getSites(): Promise<Site[]> {
+  const response = await api.get<{ data: Site[] }>(
+    "/api/sites",
+  );
+
+  return response.data || [];
+}
+
+export async function getSite(
+  id: string
+) {
+  const response = await api.get<{ data: Site }>(
+    `/api/sites/${id}`,
+  );
+
+  return response.data;
+}
+
+export async function createSite(
+  data: CreateSiteData
+) {
+  const response = await api.post<{ data: Site }>(
+    "/api/sites",
+    data,
+  );
+
+  return response.data;
+}
+
+export async function updateSite(
+  id: string,
+  data: Partial<CreateSiteData>
+) {
+  const response = await api.patch<{ data: Site }>(
+    `/api/sites/${id}`,
+    data,
+  );
+
+  return response.data;
+}
 
 export const sitesApi = {
-  getSites: async (params?: Record<string, string>): Promise<SitesResponse> => {
-    const qs = params ? '?' + new URLSearchParams(params).toString() : ''; return client.get<SitesResponse>('/sites' + qs);
+  async getSites(filters?: { vendorId?: string; limit?: string }) {
+    const params = new URLSearchParams();
+    if (filters?.vendorId) params.set("vendorId", filters.vendorId);
+    if (filters?.limit) params.set("limit", filters.limit);
+    const query = params.toString();
+    return api.get<{ data: Site[] }>(
+      query ? `/api/sites?${query}` : "/api/sites",
+    );
   },
 
-  getSite: async (id: string): Promise<Site> => {
-    return client.get<Site>(`/sites/${id}`);
-  },
+  async bulkImport(rows: Array<Record<string, unknown>>) {
+    const headers = Object.keys(rows[0] || {});
+    const csv = [
+      headers.join(","),
+      ...rows.map((row) =>
+        headers.map((header) => String(row[header] ?? "")).join(","),
+      ),
+    ].join("\n");
 
-  createSite: async (data: Partial<Site>): Promise<Site> => {
-    return client.post<Site>('/sites', data);
+    return api.post<{ imported: number; errors: string[] }>(
+      "/api/sites/import",
+      { csv },
+    );
   },
-
-  updateSite: async (id: string, data: Partial<Site>): Promise<Site> => {
-    return client.patch<Site>(`/sites/${id}`, data);
-  },
-
-  bulkImport: async (sites: Partial<Site>[]): Promise<{ imported: number, errors: string[] }> => {
-    return client.post<{ imported: number, errors: string[] }>('/sites/import', { sites });
-  },
-
-  getAvailability: async (fromDate: string, toDate: string, city?: string): Promise<Site[]> => {
-    const params = new URLSearchParams({ fromDate, toDate });
-    if (city) params.append('city', city);
-    return client.get<Site[]>(`/sites/availability?${params.toString()}`);
-  },
-
-  getSiteCalendar: async (id: string, fromDate: string, toDate: string): Promise<Booking[]> => {
-    const params = new URLSearchParams({ fromDate, toDate });
-    return client.get<Booking[]>(`/sites/${id}/calendar?${params.toString()}`);
-  }
 };

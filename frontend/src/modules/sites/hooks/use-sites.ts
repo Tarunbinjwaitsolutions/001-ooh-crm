@@ -1,94 +1,54 @@
-import { useState, useCallback, useEffect } from 'react';
-import { sitesApi } from '../api';
-import type { Site, Booking } from '../types';
-import { ApiError } from '../../../shared/api/errors';
+"use client";
 
-export function useSites(initialFilters?: Record<string, string>) {
-  const [sites, setSites] = useState<Site[]>([]);
-  const [total, setTotal] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState(initialFilters || { page: '1', limit: '25' });
+import { useEffect, useState } from "react";
+import { getSite } from "../api";
+import { useSites as useCurrentSites } from "./useSites";
+import type { Site } from "../types";
 
-  const fetchSites = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const res = await sitesApi.getSites(filters);
-      setSites(res.data);
-      setTotal(res.meta.total);
-    } catch (err: unknown) {
-      if (err instanceof ApiError) setError(err.message);
-      else setError('Failed to load sites');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [filters]);
+export function useSites() {
+  const current = useCurrentSites();
+  const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void fetchSites();
-  }, [fetchSites]);
+  const sites = current.sites.filter((site) => {
+    const value = search.trim().toLowerCase();
+    return !value || site.code.toLowerCase().includes(value) || site.city.toLowerCase().includes(value);
+  });
 
-  const updateFilter = (key: string, value: string) => {
-    setFilters(prev => ({ ...prev, [key]: value, page: '1' }));
+  return {
+    ...current,
+    sites,
+    isLoading: current.loading,
+    updateFilter: (key: string, value: string) => {
+      if (key === "search") setSearch(value);
+    },
   };
-
-  return { sites, total, isLoading, error, filters, updateFilter, mutate: fetchSites };
 }
 
 export function useSite(id: string) {
   const [site, setSite] = useState<Site | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState("");
 
-  const fetchSite = useCallback(async () => {
-    if (!id) return;
-    try {
-      setIsLoading(true);
-      setError(null);
-      const res = await sitesApi.getSite(id);
-      setSite(res);
-    } catch (err: unknown) {
-      if (err instanceof ApiError) setError(err.message);
-      else setError('Failed to load site');
-    } finally {
-      setIsLoading(false);
-    }
+  useEffect(() => {
+    let cancelled = false;
+    getSite(id)
+      .then((result) => {
+        if (!cancelled) setSite(result);
+      })
+      .catch((reason: unknown) => {
+        if (!cancelled) setError(reason instanceof Error ? reason.message : "Failed to load site");
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void fetchSite();
-  }, [fetchSite]);
-
-  return { site, isLoading, error, mutate: fetchSite };
+  return { site, isLoading, error };
 }
 
-export function useSiteCalendar(id: string, fromDate: string, toDate: string) {
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchCalendar = useCallback(async () => {
-    if (!id || !fromDate || !toDate) return;
-    try {
-      setIsLoading(true);
-      setError(null);
-      const res = await sitesApi.getSiteCalendar(id, fromDate, toDate);
-      setBookings(res);
-    } catch (err: unknown) {
-      if (err instanceof ApiError) setError(err.message);
-      else setError('Failed to load calendar');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [id, fromDate, toDate]);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void fetchCalendar();
-  }, [fetchCalendar]);
-
-  return { bookings, isLoading, error, mutate: fetchCalendar };
+export function useSiteCalendar(_id: string, _from: string, _to: string) {
+  return { bookings: [], isLoading: false, error: "" };
 }

@@ -12,6 +12,7 @@ export async function connectDatabase(): Promise<typeof mongoose> {
 
   const connection = await mongoose.connect(config.mongoUri, {
     serverSelectionTimeoutMS: 10_000,
+    retryWrites: false,
   });
 
   console.log(`[db] connected to ${connection.connection.name}`);

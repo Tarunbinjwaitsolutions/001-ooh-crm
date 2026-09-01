@@ -6,6 +6,13 @@ import { LeadsController } from './leads.controller.js';
 
 export const leadRoutes = Router();
 
+// A1: Public Webhook Intake route (before requireAuth)
+leadRoutes.post(
+  '/intake',
+  asyncHandler(LeadsController.intake),
+);
+
+// Protected routes
 leadRoutes.use(requireAuth);
 
 leadRoutes.get(
@@ -32,14 +39,44 @@ leadRoutes.patch(
   asyncHandler(LeadsController.update),
 );
 
-leadRoutes.post(
-  '/:id/claim',
-  requirePermission('leads.claim'),
-  asyncHandler(LeadsController.claim),
+leadRoutes.patch(
+  '/:id/status',
+  requirePermission('leads.update'),
+  asyncHandler(LeadsController.changeStatus),
 );
 
 leadRoutes.patch(
   '/:id/qualify',
   requirePermission('leads.update'),
   asyncHandler(LeadsController.qualify),
+);
+
+leadRoutes.post(
+  '/:id/claim',
+  requirePermission('leads.claim'),
+  asyncHandler(LeadsController.claim),
+);
+
+leadRoutes.post(
+  '/:id/log-call',
+  requirePermission('leads.log_call'),
+  asyncHandler(LeadsController.logCall),
+);
+
+leadRoutes.post(
+  '/:id/follow-up',
+  requirePermission('leads.log_call'),
+  asyncHandler(LeadsController.logFollowUp),
+);
+
+leadRoutes.post(
+  '/:id/approve',
+  requirePermission('leads.update'),
+  asyncHandler(LeadsController.managerApprove),
+);
+
+leadRoutes.get(
+  '/:id/activity',
+  requirePermission('leads.view'),
+  asyncHandler(LeadsController.getActivity),
 );

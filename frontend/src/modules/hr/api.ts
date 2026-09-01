@@ -10,6 +10,7 @@ export const attendanceApi = {
     const res = await api.post<Attendance>('/api/attendance/check-out', data);
     return res;
   },
+
   getMyAttendance: async (params?: Record<string, string | number | boolean>) => {
     const res = await api.get<Attendance[]>('/api/attendance/me', { skipAuth: false });
     return res;
@@ -40,7 +41,8 @@ export const leaveApi = {
     const res = await api.get<LeaveBalance[]>('/api/leave/balance');
     return res;
   },
-  applyLeave: async (data: Record<string, unknown>) => {
+
+  applyLeave: async (data: any) => {
     const res = await api.post<LeaveRequest>('/api/leave/apply', data);
     return res;
   },

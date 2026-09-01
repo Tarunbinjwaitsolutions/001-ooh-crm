@@ -2,6 +2,7 @@ import Attendance from '../models/attendance.model.js';
 import ShiftConfig from '../models/shift-config.model.js';
 import type { RequestContext } from '../../../core/context.js';
 import { employeeService } from '../../employees/employees.service.js';
+
 import { scopedFind } from '../../../core/scoping/index.js';
 
 // Din ki shuruaat (midnight) nikalne ke liye helper
@@ -23,7 +24,7 @@ export async function checkIn(
 
   // Check shift config for late detection
   const shiftConfig = await ShiftConfig.findOne({ department: employee.department });
-  
+
   let isLate = false;
   if (shiftConfig) {
     const [startHour, startMin] = shiftConfig.startTime.split(':').map(Number);
@@ -87,7 +88,7 @@ export async function checkIn(
 
 export async function checkOut(
   data: { gps?: { lat: number; lng: number } },
-  ctx: RequestContext
+  ctx: RequestContext,
 ) {
   const today = startOfDay(new Date());
 
@@ -95,12 +96,18 @@ export async function checkOut(
   const employee = await employeeService.getMine(ctx);
   const employeeId = employee.id;
 
-  const record = await Attendance.findOne({ employeeId, date: today });
+  const record = await Attendance.findOne({
+    employeeId,
+    date: today,
+  });
 
   if (!record || !record.checkInTime) {
-    const err: any = new Error('Cannot check out — no check-in found for today');
+    const err: any = new Error(
+      "Cannot check out — no check-in found for today",
+    );
     err.status = 400;
-    err.publicMessage = 'Please check in first before checking out.';
+    err.publicMessage =
+      "Please check in first before checking out.";
     throw err;
   }
 
@@ -108,15 +115,19 @@ export async function checkOut(
   if (data.gps) record.checkOutGps = data.gps;
 
   // totalHours calculate karo
-  const diffMs = record.checkOutTime.getTime() - record.checkInTime.getTime();
-  record.totalHours = Number((diffMs / (1000 * 60 * 60)).toFixed(2));
+  const diffMs =
+    record.checkOutTime.getTime() -
+    record.checkInTime.getTime();
+  record.totalHours = Number(
+    (diffMs / (1000 * 60 * 60)).toFixed(2),
+  );
 
   // Half-day check karo shift config se
   const shiftConfig = await ShiftConfig.findOne({ department: employee.department });
   const threshold = shiftConfig?.halfDayThresholdHours ?? 4;
 
   if (record.totalHours < threshold) {
-    record.status = 'Half-Day';
+    record.status = "Half-Day";
   }
 
   record.updatedBy = employeeId as any;
@@ -197,7 +208,7 @@ export async function getMyAttendanceSummary(ctx: RequestContext, month: number,
   let workingDays = 0;
   let absentCount = 0;
   const today = new Date();
-  
+
   // Calculate up to today if it's the current month, else the whole month
   const limitDate = (year === today.getFullYear() && month === today.getMonth() + 1) ? today : end;
 

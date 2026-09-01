@@ -59,11 +59,12 @@ export const NAV_GROUPS: NavGroup[] = [
     label: 'OPERATIONS',
     items: [
       { href: '/sites', label: 'Sites', icon: MapPin, permission: 'sites.view' },
-      { href: '/availability', label: 'Availability', icon: CalendarCheck, permission: 'sites.view' },
+      { href: '/booking', label: 'Bookings', icon: CalendarCheck, permission: 'bookings.view' },
       { href: '/vendors', label: 'Vendors', icon: Building2, permission: 'vendors.view' },
       { href: '/purchase-orders', label: 'Purchase Orders', icon: ShoppingCart, permission: 'purchase_orders.view' },
       { href: '/campaigns', label: 'Campaigns', icon: Megaphone, permission: 'campaigns.view' },
       { href: '/tasks', label: 'Tasks', icon: ClipboardCheck, permission: 'tasks.view' },
+      { href: '/escalations', label: 'Escalations', icon: AlertTriangle, permission: 'tasks.view' },
       { href: '/proofs', label: 'Proofs', icon: Camera, permission: 'proofs.view' },
     ],
   },
@@ -84,7 +85,10 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/attendance', label: 'Attendance', icon: Clock, permission: 'attendance.self' },
       { href: '/leave', label: 'My Leave', icon: CalendarDays, permission: 'leave.view' },
       { href: '/leave/approvals', label: 'Leave Approvals', icon: CalendarCheck, permission: 'leave.approve' },
-      { href: '/leave/types', label: 'Leave Types', icon: CalendarCheck, permission: 'leave.admin' },
+               { href: '/leave', label: 'My Leave', icon: CalendarDays, permission: 'leave.self' },
+      { href: '/leave/approvals', label: 'Leave Approvals', icon: CalendarCheck, permission: 'leave.manage' },
+      { href: '/leave/types', label: 'Leave Types', icon: CalendarCheck, permission: 'leave.manage' },
+
     ],
   },
   {

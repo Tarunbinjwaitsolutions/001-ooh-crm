@@ -47,6 +47,7 @@ export const PERMISSIONS = [
   'leads.claim',
   'leads.update',
   'leads.assign',
+  'leads.log_call',
 
   // Track B — Proposals & quotations
   'quotations.view',
@@ -114,6 +115,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'leads.create',
     'leads.update',
     'leads.assign',
+    'leads.log_call',
     'quotations.view',
     'quotations.create',
     'quotations.update',
@@ -142,6 +144,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'leads.create',
     'leads.claim',
     'leads.update',
+    'leads.log_call',
     'quotations.view',
     'quotations.create',
     'quotations.update',
