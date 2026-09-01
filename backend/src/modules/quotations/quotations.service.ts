@@ -5,8 +5,8 @@ import { NotFoundError, ValidationError } from '../../core/errors/index.js';
 import { scopedFindOne } from '../../core/scoping/index.js';
 import { Quotation, type IQuotation } from './quotations.model.js';
 import { Lead } from '../leads/leads.model.js';
-import { Site } from '../sites/sites.model.js';
-import { CampaignsService } from '../campaigns/campaigns.service.js';
+import { Site } from '../sites/site.model.js';
+import { createFromQuotation } from '../campaigns/campaign.service.js';
 import { toObjectId } from '../../core/db/basePlugin.js';
 import { formattedSequence } from '../../core/db/sequence.js';
 import { renderPdf, lineItemsTable, formatPaise } from '../../core/pdf/index.js';
@@ -464,7 +464,9 @@ export class QuotationsService {
 
     // Call campaignService.createFromQuotation
     try {
-      await CampaignsService.createFromQuotation(String(quotation._id));
+      await createFromQuotation(String(quotation._id), {
+        userId: quotation.createdBy ?? 'system',
+      });
     } catch (err) {
       console.error('[acceptPublic] failed to create campaign from quotation', err);
     }

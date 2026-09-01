@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import { useVendor } from '@/modules/vendors/hooks/use-vendors';
-import { VendorForm } from '@/modules/vendors/components/vendor-form';
+import VendorForm from '@/modules/vendors/components/VendorForm';
 import { Spinner } from '@/shared/ui';
 
 export default function EditVendorPage() {
@@ -24,7 +24,7 @@ export default function EditVendorPage() {
         <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Edit Vendor</h1>
         <p className="text-sm text-slate-500">Update vendor details.</p>
       </div>
-      <VendorForm initialData={vendor} />
+      <VendorForm vendor={vendor} saving={false} onClose={() => {}} onSubmit={async () => true} />
     </div>
   );
 }

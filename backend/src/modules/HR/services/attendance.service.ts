@@ -2,6 +2,7 @@
 import Attendance from '../models/attendance.model.js';
 import ShiftConfig from '../models/shift-config.model.js';
 import type { RequestContext } from '../../../core/context.js';
+import { employeeService } from '../../employees/employees.service.js';
 
 // Din ki shuruaat (midnight) nikalne ke liye helper
 function startOfDay(d: Date): Date {
@@ -45,17 +46,23 @@ export async function checkIn(
 
 export async function checkOut(
   data: { gps?: { lat: number; lng: number } },
-  ctx: RequestContext
+  ctx: RequestContext,
 ) {
   const today = startOfDay(new Date());
   const employeeId = ctx.user.id;
 
-  const record = await Attendance.findOne({ employeeId, date: today });
+  const record = await Attendance.findOne({
+    employeeId,
+    date: today,
+  });
 
   if (!record || !record.checkInTime) {
-    const err: any = new Error('Cannot check out — no check-in found for today');
+    const err: any = new Error(
+      "Cannot check out — no check-in found for today",
+    );
     err.status = 400;
-    err.publicMessage = 'Please check in first before checking out.';
+    err.publicMessage =
+      "Please check in first before checking out.";
     throw err;
   }
 
@@ -63,16 +70,28 @@ export async function checkOut(
   if (data.gps) record.checkOutGps = data.gps;
 
   // totalHours calculate karo
-  const diffMs = record.checkOutTime.getTime() - record.checkInTime.getTime();
-  record.totalHours = Number((diffMs / (1000 * 60 * 60)).toFixed(2));
+  const diffMs =
+    record.checkOutTime.getTime() -
+    record.checkInTime.getTime();
+  record.totalHours = Number(
+    (diffMs / (1000 * 60 * 60)).toFixed(2),
+  );
 
   // Half-day check karo shift config se
-  const employee = await getEmployeeWithDepartment(employeeId); // apna employee service se lo
-  const shiftConfig = await ShiftConfig.findOne({ department: employee?.department });
-  const threshold = shiftConfig?.halfDayThresholdHours ?? 4;
+  const employee =
+    await getEmployeeWithDepartment(
+      employeeId,
+      ctx,
+    );
+  const shiftConfig =
+    await ShiftConfig.findOne({
+      department: employee?.department,
+    });
+  const threshold =
+    shiftConfig?.halfDayThresholdHours ?? 4;
 
   if (record.totalHours < threshold) {
-    record.status = 'Half-Day';
+    record.status = "Half-Day";
   }
 
   record.updatedBy = employeeId as any;
@@ -91,8 +110,28 @@ export async function getTeamAttendance(ctx: RequestContext, filters: Record<str
   return Attendance.find({ deletedAt: null, ...filters }).sort({ date: -1 });
 }
 
-// Placeholder — apne employee module se actual function import karna
-async function getEmployeeWithDepartment(employeeId: string) {
-  // TODO: employeeService.getById(employeeId) se replace karo
-  return { department: 'Sales' };
+// Get employee department info — used to determine half-day threshold
+async function getEmployeeWithDepartment(
+  employeeId: string,
+  ctx: RequestContext,
+) {
+  try {
+    const employee =
+      await employeeService.getById(
+        employeeId,
+        ctx,
+      );
+
+    return {
+      department: employee.department,
+    };
+  } catch (err) {
+    // If employee lookup fails, return default
+    console.error(
+      `[Attendance] Failed to fetch employee ${employeeId}:`,
+      err,
+    );
+
+    return { department: "General" };
+  }
 }

@@ -24,7 +24,7 @@ export default function SiteDetailPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-white flex items-center gap-3">
-            {site.siteCode}
+            {site.siteCode || site.code}
             <Badge>
               {site.status}
             </Badge>
@@ -33,7 +33,7 @@ export default function SiteDetailPage() {
         </div>
         <div className="flex gap-2">
           {hasPermission('sites.manage') && (
-            <Link href={`/sites/${site._id || site.id}/edit`}>
+            <Link href={`/sites/${site._id}/edit`}>
               <Button variant="secondary">Edit Site</Button>
             </Link>
           )}
@@ -52,8 +52,8 @@ export default function SiteDetailPage() {
               <div>
                 <dt className="text-slate-500">GPS Coordinates</dt>
                 <dd className="font-medium text-primary hover:underline">
-                  <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(site.gps)}`} target="_blank" rel="noopener noreferrer">
-                    {site.gps} ↗
+                  <a href={`https://www.google.com/maps/search/?api=1&query=${site.gps.lat},${site.gps.lng}`} target="_blank" rel="noopener noreferrer">
+                    {site.gps.lat}, {site.gps.lng} ↗
                   </a>
                 </dd>
               </div>
@@ -61,7 +61,7 @@ export default function SiteDetailPage() {
             <div>
               <dt className="text-slate-500">Dimensions</dt>
               <dd className="font-medium text-slate-900 dark:text-white">
-                {site.width && site.height ? `${site.width}ft x ${site.height}ft` : 'N/A'}
+                {site.width && site.height ? `${site.width}ft x ${site.height}ft` : `${site.sizeWidth}ft x ${site.sizeHeight}ft`}
               </dd>
             </div>
           </dl>
@@ -77,7 +77,7 @@ export default function SiteDetailPage() {
             <div>
               <dt className="text-slate-500">Vendor</dt>
               <dd className="font-medium text-slate-900 dark:text-white">
-                {typeof site.vendorId === 'object' ? (
+                {typeof site.vendorId === 'object' && site.vendorId !== null ? (
                   <Link href={`/vendors/${(site.vendorId as any)._id || (site.vendorId as any).id}`} className="text-primary hover:underline">
                     {vendorName} ({vendorCity})
                   </Link>
