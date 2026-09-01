@@ -3,6 +3,7 @@ import { Card, Button, Badge, Spinner, Alert, SelectField } from '@/shared/ui';
 import { useMyAttendance } from '../hooks/use-attendance';
 import { attendanceApi } from '../api';
 import { WorkType } from '../types';
+import { formatHoursToHM } from '@/shared/utils/formatters';
 
 export function AttendanceWidget() {
   const { data: attendance, isLoading, mutate } = useMyAttendance();
@@ -10,9 +11,13 @@ export function AttendanceWidget() {
   const [error, setError] = useState<string | null>(null);
   const [workType, setWorkType] = useState<WorkType>('Office');
 
-  // Find today's attendance record
-  const today = new Date().toISOString().split('T')[0];
-  const todayRecord = attendance?.find((r) => r.date.startsWith(today));
+  const now = new Date();
+  const todayRecord = attendance?.find((r) => {
+    const d = new Date(r.date);
+    return d.getFullYear() === now.getFullYear() && 
+           d.getMonth() === now.getMonth() && 
+           d.getDate() === now.getDate();
+  });
 
   const handleAction = async (action: 'check-in' | 'check-out') => {
     setLoading(true);
@@ -66,9 +71,11 @@ export function AttendanceWidget() {
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold text-slate-800">Attendance</h3>
         {todayRecord?.status && (
-          <Badge>
-            {todayRecord.status}
-          </Badge>
+          <div className="animate-in fade-in duration-300">
+            <Badge>
+              {todayRecord.status}
+            </Badge>
+          </div>
         )}
       </div>
 
@@ -91,11 +98,11 @@ export function AttendanceWidget() {
 
       <div className="p-3 bg-slate-50 rounded-lg">
         <p className="text-slate-500 text-sm mb-1">Total Hours</p>
-        <p className="font-medium text-slate-800 text-lg">{todayRecord?.totalHours ?? '0.00'} hrs</p>
+        <p className="font-medium text-slate-800 text-lg">{formatHoursToHM(todayRecord?.totalHours)}</p>
       </div>
 
       {!isCheckedIn && (
-        <div className="space-y-3">
+        <div className="space-y-3 animate-in fade-in zoom-in-95 duration-200">
           <SelectField
             label="Work Type"
             value={workType}
@@ -107,7 +114,7 @@ export function AttendanceWidget() {
             ]}
           />
           <Button
-            className="w-full"
+            className="w-full transition-all duration-200 ease-in-out hover:scale-[1.02]"
             variant="primary"
             onClick={() => handleAction('check-in')}
             isLoading={loading}
@@ -118,18 +125,20 @@ export function AttendanceWidget() {
       )}
 
       {isCheckedIn && !isCheckedOut && (
-        <Button
-          className="w-full"
-          variant="secondary"
-          onClick={() => handleAction('check-out')}
-          isLoading={loading}
-        >
-          Check Out
-        </Button>
+        <div className="animate-in fade-in zoom-in-95 duration-200">
+          <Button
+            className="w-full transition-all duration-200 ease-in-out hover:scale-[1.02]"
+            variant="secondary"
+            onClick={() => handleAction('check-out')}
+            isLoading={loading}
+          >
+            Check Out
+          </Button>
+        </div>
       )}
 
       {isCheckedOut && (
-        <div className="p-3 bg-green-50 text-green-700 rounded-lg text-center font-medium">
+        <div className="p-3 bg-green-50 text-green-700 rounded-lg text-center font-medium animate-in fade-in zoom-in-95 duration-300">
           Attendance completed for today.
         </div>
       )}
