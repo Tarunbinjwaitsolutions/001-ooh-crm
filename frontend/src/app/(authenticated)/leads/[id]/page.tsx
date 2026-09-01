@@ -192,7 +192,7 @@ export default function LeadDetailPage() {
               {lead.status}
             </span>
             <span className="inline-flex items-center rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-xs font-medium text-slate-600 dark:text-slate-400">
-              ⏱️ Aging: {agingDays}d
+              ⏱️ Lead Duration: {agingDays}d
             </span>
             {lead.nextActionDate && (
               <span
