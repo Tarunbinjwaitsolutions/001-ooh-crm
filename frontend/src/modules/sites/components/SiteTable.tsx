@@ -1,7 +1,6 @@
 "use client";
 
 import type { Site } from "../types";
-
 import { formatCost } from "../format";
 
 interface Props {
@@ -24,9 +23,7 @@ export default function SiteTable({
 
           <p className="mt-1 text-sm text-gray-500">
             {sites.length}{" "}
-            {sites.length === 1
-              ? "site"
-              : "sites"}{" "}
+            {sites.length === 1 ? "site" : "sites"}{" "}
             found
           </p>
         </div>
@@ -111,35 +108,38 @@ export default function SiteTable({
                 {/* Size */}
                 <td className="whitespace-nowrap px-5 py-4">
                   <span className="text-sm text-gray-700">
-                    {site.sizeWidth} ×{" "}
-                    {site.sizeHeight}
+                    {site.sizeWidth} × {site.sizeHeight}
                   </span>
                 </td>
 
                 {/* Cost */}
                 <td className="whitespace-nowrap px-5 py-4">
                   <span className="text-sm font-medium text-gray-900">
-                    {formatCost(
-                      site.baseCostPerDay
-                    )}
+                    {formatCost(site.baseCostPerDay)}
                   </span>
                 </td>
 
                 {/* Status */}
                 <td className="whitespace-nowrap px-5 py-4">
-                  <StatusBadge
-                    status={site.status}
-                  />
+                  <StatusBadge status={site.status} />
                 </td>
 
                 {/* Action */}
                 <td className="whitespace-nowrap px-5 py-4 text-right">
                   <button
                     type="button"
-                    onClick={() =>
-                      onEdit(site)
-                    }
-                    className="rounded-lg border border-[#8B2424] bg-[#8B2424] px-3.5 py-2 text-sm font-medium text-[#F9DADA] transition hover:border-[#8B2424] hover:bg-[#8B2424]"
+                    onClick={() => onEdit(site)}
+                    className="
+                      rounded-lg
+                      border border-[#8B2424]
+                      bg-[#8B2424]
+                      px-3.5 py-2
+                      text-sm font-medium
+                      text-[#F9DADA]
+                      transition
+                      hover:bg-[#F9DADA]
+                      hover:text-[#8B2424]
+                    "
                   >
                     Edit
                   </button>
@@ -147,7 +147,7 @@ export default function SiteTable({
               </tr>
             ))}
 
-            {/* Empty state */}
+            {/* Empty State */}
             {sites.length === 0 && (
               <tr>
                 <td
@@ -197,7 +197,7 @@ function StatusBadge({
 }) {
   const styles = {
     Active:
-      "bg-[#F9DADA] text-[#8B2424] ring-[#8B2424]/20",
+      "bg-green-50 text-green-700 ring-green-600/20",
 
     Maintenance:
       "bg-[#F9DADA] text-[#A8333B] ring-[#A8333B]/20",
@@ -208,18 +208,32 @@ function StatusBadge({
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${
-        styles[status]
-      }`}
+      className={`
+        inline-flex
+        items-center
+        gap-1.5
+        rounded-full
+        px-2.5 py-1
+        text-xs
+        font-medium
+        ring-1
+        ring-inset
+        ${styles[status]}
+      `}
     >
       <span
-        className={`h-1.5 w-1.5 rounded-full ${
-          status === "Active"
-            ? "bg-[#8B2424]"
-            : status === "Maintenance"
-              ? "bg-[#A8333B]"
-              : "bg-gray-400"
-        }`}
+        className={`
+          h-1.5
+          w-1.5
+          rounded-full
+          ${
+            status === "Active"
+              ? "bg-green-600"
+              : status === "Maintenance"
+                ? "bg-[#A8333B]"
+                : "bg-gray-400"
+          }
+        `}
       />
 
       {status}

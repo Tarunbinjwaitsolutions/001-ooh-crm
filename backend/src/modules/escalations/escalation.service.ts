@@ -4,6 +4,8 @@ import {
   EscalationModel,
   type EscalationLevel,
 } from "./escalation.model.js";
+import { Task } from "../tasks/task.model.js";
+import { notify } from "../../core/notifications/index.js";
 
 export const ESCALATION_THRESHOLD_HOURS = {
   L1: 2,
@@ -315,16 +317,109 @@ export const listTaskEscalations =
 /**
  * Process escalations for all overdue tasks.
  *
- * This is a placeholder implementation.
- * The actual logic should:
- * 1. Fetch all overdue tasks
- * 2. Determine escalation levels
- * 3. Create escalations for new levels
- * 4. Trigger notifications
+ * This function:
+ * 1. Fetches all overdue tasks
+ * 2. Determines escalation levels
+ * 3. Creates escalations for new levels
+ * 4. Triggers notifications
  */
 export async function processEscalations() {
-  // TODO: Implement escalation processing
-  console.log(
-    "[Escalations] Processing started",
-  );
+  const now = new Date();
+
+  try {
+    // 1. Fetch all non-completed tasks that are overdue
+    const allTasks = await Task.find({
+      status: { $ne: "Completed" },
+      deadline: { $lt: now },
+    })
+      .populate("assignedTo", "_id")
+      .lean();
+
+    if (allTasks.length === 0) {
+      console.log(
+        "[Escalations] No overdue tasks found",
+      );
+      return;
+    }
+
+    let escalationsCreated = 0;
+    let notificationsSent = 0;
+
+    // 2. Process each task
+    for (const task of allTasks) {
+      const reachedLevels =
+        getTaskEscalationLevels(
+          task as EscalationTask,
+          now,
+        );
+
+      if (reachedLevels.length === 0) {
+        continue;
+      }
+
+      // 3. Create escalations for each new level
+      for (const level of reachedLevels) {
+        const hasExisting =
+          await hasEscalation(
+            String(task._id),
+            level,
+          );
+
+        if (hasExisting) {
+          continue;
+        }
+
+        // Collect user IDs to notify
+        const notifyUserIds: string[] =
+          [];
+
+        // Always notify the assigned person
+        if (task.assignedTo) {
+          notifyUserIds.push(
+            String(task.assignedTo),
+          );
+        }
+
+        // Create the escalation
+        await createEscalation(
+          String(task._id),
+          level,
+          notifyUserIds,
+        );
+
+        // 4. Trigger notifications for each new escalation
+        for (const userId of notifyUserIds) {
+          try {
+            await notify({
+              userId,
+              type:
+                "escalations.task_escalated",
+              title: `Task escalated to ${level}`,
+              body: `Task "${task.title}" has been escalated to level ${level} due to overdue deadline.`,
+              link: `/tasks/${task._id}`,
+              email: true,
+            });
+
+            notificationsSent++;
+          } catch (err) {
+            console.error(
+              `[Escalations] Failed to send notification to ${userId}:`,
+              err,
+            );
+          }
+        }
+
+        escalationsCreated++;
+      }
+    }
+
+    console.log(
+      `[Escalations] Processing complete: ${escalationsCreated} escalations created, ${notificationsSent} notifications sent`,
+    );
+  } catch (err) {
+    console.error(
+      "[Escalations] Processing failed:",
+      err,
+    );
+  }
 }

@@ -53,12 +53,15 @@ function toFormData(
     leadId:
       typeof campaign.leadId === "string"
         ? campaign.leadId
-        : campaign.leadId._id,
+        : campaign.leadId?._id ?? "",
 
     quotationId:
-      typeof campaign.quotationId === "string"
-        ? campaign.quotationId
-        : campaign.quotationId._id,
+      !campaign.quotationId
+        ? ""
+        : typeof campaign.quotationId ===
+            "string"
+          ? campaign.quotationId
+          : campaign.quotationId._id,
 
     city: campaign.city,
 
@@ -81,7 +84,8 @@ function toFormData(
     status: campaign.status,
 
     assignedManager:
-      typeof campaign.assignedManager === "string"
+      typeof campaign.assignedManager ===
+        "string"
         ? campaign.assignedManager
         : campaign.assignedManager?._id ?? "",
   };

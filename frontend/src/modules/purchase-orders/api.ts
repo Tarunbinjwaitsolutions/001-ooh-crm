@@ -1,30 +1,55 @@
-import { api as client } from '../../shared/api/client';
-import type { PurchaseOrder, PurchaseOrdersResponse, POStatus } from './types';
+import { api } from "@/shared/api/client";
+import type {
+  PurchaseOrderFormData,
+  PurchaseOrderResponse,
+  PurchaseOrdersResponse,
+} from "./types";
 
-export const purchaseOrdersApi = {
-  getPurchaseOrders: async (params?: Record<string, string>): Promise<PurchaseOrdersResponse> => {
-    const qs = params ? '?' + new URLSearchParams(params).toString() : ''; return client.get<PurchaseOrdersResponse>('/api/purchase-orders' + qs);
-  },
+export async function getPurchaseOrders() {
+  return api.get<PurchaseOrdersResponse>(
+    "/api/purchase-orders",
+  );
+}
 
-  getPurchaseOrder: async (id: string): Promise<PurchaseOrder> => {
-    return client.get<PurchaseOrder>(`/api/purchase-orders/${id}`);
-  },
+export async function getPurchaseOrder(
+  id: string,
+) {
+  return api.get<PurchaseOrderResponse>(
+    `/api/purchase-orders/${id}`,
+  );
+}
 
-  createPurchaseOrder: async (data: any): Promise<PurchaseOrder> => {
-    return client.post<PurchaseOrder>('/api/purchase-orders', data);
-  },
+export async function createPurchaseOrder(
+  data: PurchaseOrderFormData,
+) {
+  return api.post<PurchaseOrderResponse>(
+    "/api/purchase-orders",
+    data,
+  );
+}
 
-  updateStatus: async (id: string, status: POStatus): Promise<PurchaseOrder> => {
-    return client.patch<PurchaseOrder>(`/api/purchase-orders/${id}/status`, { status });
-  },
+export async function updatePurchaseOrder(
+  id: string,
+  data: Partial<PurchaseOrderFormData>,
+) {
+  return api.patch<PurchaseOrderResponse>(
+    `/api/purchase-orders/${id}`,
+    data,
+  );
+}
 
-  downloadPDF: async (id: string): Promise<Blob> => {
-    const res = await fetch(`http://localhost:5000/api/purchase-orders/${id}/pdf`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
-      },
-    });
-    if (!res.ok) throw new Error('Failed to download PDF');
-    return res.blob();
-  },
-};
+export async function issuePurchaseOrder(
+  id: string,
+) {
+  return api.post<PurchaseOrderResponse>(
+    `/api/purchase-orders/${id}/issue`,
+  );
+}
+
+export async function cancelPurchaseOrder(
+  id: string,
+) {
+  return api.post<PurchaseOrderResponse>(
+    `/api/purchase-orders/${id}/cancel`,
+  );
+}

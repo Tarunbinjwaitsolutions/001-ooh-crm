@@ -69,8 +69,9 @@ import campaignRoutes from './modules/campaigns/campaign.routes.js';
 import bookingRoutes from './modules/bookings/booking.routes.js';
 import taskRoutes from './modules/tasks/task.routes.js';
 import escalationRoutes from './modules/escalations/escalation.routes.js';
+import purchaseOrderRoutes from "./modules/purchase-orders/purchase-order.routes.js";
 
-import { purchaseOrderRoutes } from './modules/purchase-orders/purchase-orders.routes.js';
+
 import quotationsRoutes, { publicQuotationsRoutes } from './modules/quotations/quotations.routes.js';
 
 // --- Modules ------------------------------------------------------------------
