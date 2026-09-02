@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { quotationsApi } from '@/modules/quotations/api';
+import { sessionStore } from '@/shared/auth/session-store';
 import type { Quotation } from '@/modules/quotations/types';
 
 export default function QuotationDetailPage() {
@@ -22,7 +23,19 @@ export default function QuotationDetailPage() {
 
   // PDF state
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [uploadLoading, setUploadLoading] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function withAuthToken(rawUrl: string): string {
+    if (!rawUrl) return '';
+    const token = sessionStore.getAccessToken();
+    if (token && rawUrl.startsWith('/api/files/')) {
+      const separator = rawUrl.includes('?') ? '&' : '?';
+      return `${rawUrl}${separator}token=${encodeURIComponent(token)}`;
+    }
+    return rawUrl;
+  }
 
   useEffect(() => {
     if (id) fetchQuotation();
@@ -50,7 +63,7 @@ export default function QuotationDetailPage() {
   async function loadPdfUrl() {
     try {
       const res = await quotationsApi.getPdfUrl(id);
-      setPdfUrl(res.pdfUrl);
+      setPdfUrl(withAuthToken(res.pdfUrl));
     } catch (err) {
       console.error(err);
     }
@@ -60,7 +73,7 @@ export default function QuotationDetailPage() {
     try {
       setPdfLoading(true);
       const res = await quotationsApi.generatePdf(id);
-      setPdfUrl(res.pdfUrl);
+      setPdfUrl(withAuthToken(res.pdfUrl));
       if (quotation) {
         setQuotation({ ...quotation, pdfKey: res.pdfKey });
       }
@@ -68,6 +81,30 @@ export default function QuotationDetailPage() {
       alert(err.message || 'PDF generation failed');
     } finally {
       setPdfLoading(false);
+    }
+  }
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.type !== 'application/pdf') {
+      alert('Please select a valid PDF file');
+      return;
+    }
+
+    try {
+      setUploadLoading(true);
+      const res = await quotationsApi.uploadPdf(id, file);
+      setPdfUrl(withAuthToken(res.pdfUrl));
+      if (quotation) {
+        setQuotation({ ...quotation, pdfKey: res.pdfKey });
+      }
+      alert('Custom proposal PDF uploaded successfully!');
+    } catch (err: any) {
+      alert(err.message || 'Failed to upload PDF');
+    } finally {
+      setUploadLoading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   }
 
@@ -111,6 +148,15 @@ export default function QuotationDetailPage() {
 
   return (
     <div className="space-y-6">
+      {/* Hidden PDF file input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept="application/pdf"
+        className="hidden"
+        onChange={handleFileUpload}
+      />
+
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -138,11 +184,31 @@ export default function QuotationDetailPage() {
           <button
             type="button"
             onClick={handleGeneratePdf}
-            disabled={pdfLoading}
+            disabled={pdfLoading || uploadLoading}
             className="rounded bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
           >
-            {pdfLoading ? 'Generating PDF...' : quotation.pdfKey ? 'Regenerate PDF' : 'Generate PDF (B2)'}
+            {pdfLoading ? 'Generating PDF...' : quotation.pdfKey ? 'Regenerate PDF' : 'Generate PDF'}
           </button>
+
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploadLoading || pdfLoading}
+            className="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+          >
+            {uploadLoading ? 'Uploading...' : '📤 Upload Custom PDF'}
+          </button>
+
+          {pdfUrl && (
+            <a
+              href={pdfUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-950 dark:text-indigo-300"
+            >
+              📄 View PDF
+            </a>
+          )}
 
           <button
             type="button"

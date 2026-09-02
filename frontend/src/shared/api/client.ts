@@ -83,7 +83,10 @@ async function request<T>(
   const headers: Record<string, string> = {};
   const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
 
-  if (body !== undefined && !isFormData) headers['Content-Type'] = 'application/json';
+  if (body !== undefined && !isFormData) {
+    headers['Content-Type'] = 'application/json';
+  }
+
 
   if (!options.skipAuth) {
     const accessToken = sessionStore.getAccessToken();

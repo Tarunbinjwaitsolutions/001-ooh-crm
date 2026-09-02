@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useLead } from '@/modules/leads/hooks/use-leads';
 import { leadsApi } from '@/modules/leads/api';
@@ -178,14 +179,14 @@ export default function LeadDetailPage() {
   return (
     <div className="space-y-6 py-6 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
               {lead.companyName}
             </h1>
             <span
-              className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${
+              className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${
                 STATUS_STYLES[lead.status] ?? 'border-slate-200 bg-slate-50 text-slate-700'
               }`}
             >
@@ -212,15 +213,11 @@ export default function LeadDetailPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap">
-          <Button variant="secondary" onClick={() => setLogModalOpen(true)}>
-            + Log Action / ATR
-          </Button>
-
+        <div className="flex flex-wrap items-center justify-start lg:justify-end gap-2.5">
           {/* Valid Next Steps Dropdown */}
           {availableNextStatuses.length > 0 && (
             <div className="flex items-center gap-2">
-              <label htmlFor="nextStatus" className="text-xs font-medium text-slate-500">
+              <label htmlFor="nextStatus" className="text-xs font-medium text-slate-500 whitespace-nowrap">
                 Move to:
               </label>
               <select
@@ -231,7 +228,7 @@ export default function LeadDetailPage() {
                   if (e.target.value) handleStatusSelect(e.target.value as LeadStatus);
                 }}
                 aria-label="Next lead status transition"
-                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:border-red-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:border-red-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
               >
                 <option value="" disabled>Select next status...</option>
                 {availableNextStatuses.map((s) => (
@@ -242,6 +239,16 @@ export default function LeadDetailPage() {
               </select>
             </div>
           )}
+
+          <Button variant="secondary" onClick={() => setLogModalOpen(true)}>
+            + Log Action / ATR
+          </Button>
+
+          <Link href={`/quotations/new?leadId=${lead._id || lead.id}`}>
+            <Button variant="primary" className="bg-[#8B2424] text-white hover:bg-[#6E1D1D] shadow-sm">
+              + Create Quotation
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -255,7 +262,7 @@ export default function LeadDetailPage() {
       <div className="flex gap-4 border-b border-slate-200 dark:border-slate-800">
         {[
           { id: 'info', label: 'Information' },
-          { id: 'qualification', label: 'Qualification' },
+          { id: 'qualification', label: 'Requirements' },
           { id: 'activity', label: 'Activity Timeline (ATR)' },
           { id: 'documents', label: 'Documents' },
         ].map((tab) => (
@@ -542,7 +549,7 @@ export default function LeadDetailPage() {
                   <div key={idx} className="relative pl-6">
                     {/* Timeline dot */}
                     <div
-                      className={`absolute -left-[9px] top-1 h-4 w-4 rounded-full border-2 border-white dark:border-slate-900 ${
+                      className={`absolute -left-2.25 top-1 h-4 w-4 rounded-full border-2 border-white dark:border-slate-900 ${
                         item.type === 'status_change'
                           ? item.to === 'Won'
                             ? 'bg-emerald-500'

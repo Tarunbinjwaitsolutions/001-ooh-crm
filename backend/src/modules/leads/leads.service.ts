@@ -128,6 +128,7 @@ export class LeadsService {
       assignedTo: toObjectId(ctx.user.id),
       claimedBy: toObjectId(ctx.user.id),
       claimedAt: now,
+      slaTimerEnd: new Date(now.getTime() + 24 * 60 * 60 * 1000),
       status,
       statusHistory: [
         {
@@ -239,7 +240,6 @@ export class LeadsService {
           assignedTo: toObjectId(ctx.user.id),
           claimedAt: now,
           status: 'Contacted',
-          firstResponseAt: now,
           slaTimerEnd: new Date(now.getTime() + 24 * 60 * 60 * 1000),
           updatedBy: toObjectId(ctx.user.id),
         },
