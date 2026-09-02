@@ -332,14 +332,6 @@ export default function LeadsPage() {
                             >
                               Log Action
                             </Button>
-                            <Link href={`/quotations/new?leadId=${lead._id || lead.id}`}>
-                              <Button
-                                variant="ghost"
-                                className="border border-[#8B2424] text-[#8B2424] hover:bg-[#F9DADA] hover:text-black"
-                              >
-                                + Quote
-                              </Button>
-                            </Link>
                           </div>
                         )}
                       </td>
