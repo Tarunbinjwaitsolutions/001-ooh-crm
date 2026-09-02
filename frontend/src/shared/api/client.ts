@@ -88,6 +88,7 @@ async function request<T>(
   }
 
 
+
   if (!options.skipAuth) {
     const accessToken = sessionStore.getAccessToken();
     if (accessToken) headers.Authorization = `Bearer ${accessToken}`;

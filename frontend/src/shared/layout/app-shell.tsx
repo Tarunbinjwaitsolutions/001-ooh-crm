@@ -20,7 +20,6 @@ import {
   TrendingUp,
   Clock,
   CalendarDays,
-  FileBarChart,
   ShieldCheck,
   AlertTriangle,
   Search,
@@ -28,7 +27,7 @@ import {
   Menu,
   X,
   LogOut,
-  ChevronDown
+  ChevronDown,
 } from 'lucide-react';
 
 import { useAuth } from '../auth/auth-context';
@@ -83,12 +82,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/employees', label: 'Employees', icon: Users, permission: 'employees.view' },
       { href: '/candidates', label: 'Interviews', icon: Users, permission: 'candidates.view' },
       { href: '/attendance', label: 'Attendance', icon: Clock, permission: 'attendance.self' },
-      { href: '/leave', label: 'My Leave', icon: CalendarDays, permission: 'leave.view' },
-      { href: '/leave/approvals', label: 'Leave Approvals', icon: CalendarCheck, permission: 'leave.approve' },
-               { href: '/leave', label: 'My Leave', icon: CalendarDays, permission: 'leave.self' },
-      { href: '/leave/approvals', label: 'Leave Approvals', icon: CalendarCheck, permission: 'leave.manage' },
-      { href: '/leave/types', label: 'Leave Types', icon: CalendarCheck, permission: 'leave.manage' },
-
+      { href: '/leave', label: 'Leave', icon: CalendarDays, permission: 'leave.self' },
     ],
   },
   {

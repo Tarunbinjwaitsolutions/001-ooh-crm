@@ -91,6 +91,7 @@ export const PERMISSIONS = [
   'attendance.view_team',
   'leave.self',
   'leave.manage',
+  'holiday.manage',
   'reports.view',
   'candidates.view',
   'candidates.manage',

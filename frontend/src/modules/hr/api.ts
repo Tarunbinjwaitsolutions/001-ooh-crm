@@ -1,5 +1,15 @@
 import { api } from '@/shared/api/client';
-import { Attendance, LeaveType, LeaveRequest, LeaveBalance, WorkType, Candidate, CandidateStatus, CandidateListQuery } from './types';
+import {
+  Attendance,
+  LeaveType,
+  LeaveRequest,
+  LeaveBalance,
+  WorkType,
+  Holiday,
+  Candidate,
+  CandidateStatus,
+  CandidateListQuery,
+} from './types';
 
 export const attendanceApi = {
   checkIn: async (data: { gps?: { lat: number; lng: number }; workType?: WorkType; deviceInfo?: string }) => {
@@ -30,36 +40,71 @@ export const attendanceApi = {
 
 export const leaveApi = {
   getLeaveTypes: async () => {
-    const res = await api.get<LeaveType[]>('/api/leave/types');
-    return res;
+    const res = await api.get<{ leaveTypes: LeaveType[] }>('/api/leave-types?pageSize=100');
+    return res.leaveTypes;
   },
   createLeaveType: async (data: Partial<LeaveType>) => {
-    const res = await api.post<LeaveType>('/api/leave/types', data);
-    return res;
+    const res = await api.post<{ leaveType: LeaveType }>('/api/leave-types', {
+      name: data.name,
+      code: data.code,
+      annualQuota: data.annualQuota ?? null,
+      carryForward: data.carryForward ?? false,
+      maxCarryForward: data.maxCarryForward ?? 0,
+      encashable: data.encashable ?? false,
+      requiresDocument: data.requiresDocument ?? false,
+    });
+    return res.leaveType;
   },
-  getBalance: async () => {
-    const res = await api.get<LeaveBalance[]>('/api/leave/balance');
-    return res;
+  updateLeaveType: async (id: string, data: Partial<LeaveType>) => {
+    const res = await api.patch<{ leaveType: LeaveType }>(`/api/leave-types/${id}`, data);
+    return res.leaveType;
+  },
+  deleteLeaveType: async (id: string) => {
+    const res = await api.delete<{ message: string; leaveType: LeaveType }>(`/api/leave-types/${id}`);
+    return res.leaveType;
+  },
+  getBalance: async (employeeId: string, year = new Date().getFullYear()) => {
+    const res = await api.get<{ balances: LeaveBalance[] }>(`/api/employees/${employeeId}/leave-balance?year=${year}`);
+    return res.balances;
   },
 
   applyLeave: async (data: any) => {
-    const res = await api.post<LeaveRequest>('/api/leave/apply', data);
+    const res = await api.post<LeaveRequest>('/api/leave-requests', data);
     return res;
   },
   getMyRequests: async () => {
-    const res = await api.get<LeaveRequest[]>('/api/leave/me');
+    const res = await api.get<LeaveRequest[]>('/api/leave-requests/me');
     return res;
   },
   getTeamRequests: async () => {
-    const res = await api.get<LeaveRequest[]>('/api/leave/team');
+    const res = await api.get<LeaveRequest[]>('/api/leave-requests/team');
     return res;
   },
   approveLeave: async (id: string) => {
-    const res = await api.post<LeaveRequest>(`/api/leave/${id}/approve`);
+    const res = await api.post<LeaveRequest>(`/api/leave-requests/${id}/approve`);
     return res;
   },
   rejectLeave: async (id: string, rejectionReason: string) => {
-    const res = await api.post<LeaveRequest>(`/api/leave/${id}/reject`, { rejectionReason });
+    const res = await api.post<LeaveRequest>(`/api/leave-requests/${id}/reject`, { status: 'Rejected', rejectionReason });
+    return res;
+  },
+};
+
+export const holidayApi = {
+  getHolidays: async () => {
+    const res = await api.get<Holiday[]>('/api/holidays');
+    return res;
+  },
+  createHoliday: async (data: { name: string; date: string; description?: string }) => {
+    const res = await api.post<Holiday>('/api/holidays', data);
+    return res;
+  },
+  updateHoliday: async (id: string, data: { name: string; date: string; description?: string }) => {
+    const res = await api.put<Holiday>(`/api/holidays/${id}`, data);
+    return res;
+  },
+  deleteHoliday: async (id: string) => {
+    const res = await api.delete<{ message: string; holiday: Holiday }>(`/api/holidays/${id}`);
     return res;
   },
 };

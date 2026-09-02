@@ -3,11 +3,11 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function ApplyLeaveRedirect() {
+export default function HolidayCalendarRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/leave?apply=true');
+    router.replace('/leave?tab=calendar');
   }, [router]);
 
   return null;
