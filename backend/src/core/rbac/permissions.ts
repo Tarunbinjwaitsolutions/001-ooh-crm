@@ -91,6 +91,9 @@ export const PERMISSIONS = [
   'attendance.view_team',
   'leave.self',
   'leave.manage',
+  'reports.view',
+  'candidates.view',
+  'candidates.manage',
 
   // Track H — Audit
   'audit.view',
@@ -130,6 +133,9 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'employees.view',
     'attendance.view_team',
     'leave.manage',
+    'reports.view',
+    'candidates.view',
+    'candidates.manage',
   ],
 
   sales_agent: [
@@ -190,6 +196,9 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'employees.sensitive',
     'attendance.view_team',
     'leave.manage',
+    'reports.view',
+    'candidates.view',
+    'candidates.manage',
   ],
 
   employee: [...BASE, 'tasks.view'],

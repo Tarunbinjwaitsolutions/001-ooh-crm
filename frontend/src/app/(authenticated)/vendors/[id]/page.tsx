@@ -27,7 +27,7 @@ export default function VendorDetailPage() {
         </div>
         <div className="flex gap-2">
           {hasPermission('vendors.manage') && (
-            <Link href={`/vendors/${vendor._id || vendor.id}/edit`}>
+            <Link href={`/vendors/${vendor._id}/edit`}>
               <Button variant="secondary">Edit Vendor</Button>
             </Link>
           )}
@@ -76,11 +76,11 @@ export default function VendorDetailPage() {
               <>
                 <div>
                   <dt className="text-slate-500">Bank Account</dt>
-                  <dd className="font-medium text-slate-900 dark:text-white">{vendor.bankAccount || '-'}</dd>
+                  <dd className="font-medium text-slate-900 dark:text-white">{vendor.bankAccount || vendor.bankAccountNumber || '-'}</dd>
                 </div>
                 <div>
                   <dt className="text-slate-500">IFSC Code</dt>
-                  <dd className="font-medium text-slate-900 dark:text-white">{vendor.ifscCode || '-'}</dd>
+                  <dd className="font-medium text-slate-900 dark:text-white">{vendor.ifscCode || vendor.ifsc || '-'}</dd>
                 </div>
               </>
             )}

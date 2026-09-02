@@ -39,7 +39,7 @@ export const config = {
   isProduction,
   port: num('PORT', 5000),
 
-  mongoUri: required('MONGO_URI', 'mongodb://localhost:27017/media-octus-crm'),
+  mongoUri: required('MONGO_URI', 'mongodb://localhost:27017/media-octus-crm?retryWrites=false'),
 
   cors: {
     // Comma-separated list. "*" allows everything (fine for local dev only).

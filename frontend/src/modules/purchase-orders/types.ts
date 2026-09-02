@@ -1,34 +1,57 @@
-import type { Vendor } from '../vendors/types';
-import type { Site } from '../sites/types';
+export type PurchaseOrderStatus =
+  | "Draft"
+  | "Issued"
+  | "Accepted"
+  | "Cancelled";
 
-export type POStatus = 'Draft' | 'Issued' | 'Accepted' | 'Cancelled';
-
-export interface PurchaseOrderSite {
-  siteId: string | Site;
-  negotiatedRate: number;
+export interface PurchaseOrderLineItem {
   _id?: string;
+  siteId: string;
+  from: string;
+  to: string;
+  negotiatedRatePerDay: number;
+  days: number;
+  amount: number;
 }
 
 export interface PurchaseOrder {
-  id: string;
   _id: string;
   poNumber: string;
-  campaignId: { _id: string, name: string } | string;
-  vendorId: Vendor | string;
-  sites: PurchaseOrderSite[];
+  campaignId:
+    | string
+    | { _id: string; name: string };
+  vendorId:
+    | string
+    | {
+        _id: string;
+        name: string;
+        state?: string;
+        city?: string;
+      };
+  lineItems: PurchaseOrderLineItem[];
   totalAmount: number;
-  status: POStatus;
-  startDate: string;
-  endDate: string;
-  issuedDate?: string;
-  createdAt: string;
+  status: PurchaseOrderStatus;
+  issuedAt?: string;
+  pdfKey?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface PurchaseOrderFormData {
+  campaignId: string;
+  vendorId: string;
+  lineItems: Omit<
+    PurchaseOrderLineItem,
+    "amount" | "days"
+  >[];
 }
 
 export interface PurchaseOrdersResponse {
   data: PurchaseOrder[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-  };
+  message?: string;
+}
+
+export interface PurchaseOrderResponse {
+  data: PurchaseOrder;
+  message?: string;
 }

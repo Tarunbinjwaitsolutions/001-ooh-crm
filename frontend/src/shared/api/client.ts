@@ -87,6 +87,7 @@ async function request<T>(
     headers['Content-Type'] = 'application/json';
   }
 
+
   if (!options.skipAuth) {
     const accessToken = sessionStore.getAccessToken();
     if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
@@ -125,6 +126,21 @@ async function request<T>(
 
 export const api = {
   get: <T>(path: string, options?: RequestOptions) => request<T>('GET', path, undefined, options),
+  getBlob: async (path: string, options?: RequestOptions): Promise<Blob> => {
+    const headers: Record<string, string> = {};
+    if (!options?.skipAuth) {
+      const accessToken = sessionStore.getAccessToken();
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+    }
+    const fullUrl = path.startsWith('http') ? path : `${appConfig.apiUrl}${path}`;
+    const response = await fetch(fullUrl, {
+      method: 'GET',
+      headers,
+      signal: options?.signal,
+    });
+    if (!response.ok) throw await parseError(response);
+    return await response.blob();
+  },
   post: <T>(path: string, body?: unknown, options?: RequestOptions) =>
     request<T>('POST', path, body, options),
   patch: <T>(path: string, body?: unknown, options?: RequestOptions) =>

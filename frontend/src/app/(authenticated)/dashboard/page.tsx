@@ -20,9 +20,9 @@ export default function DashboardPage() {
         <h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
           Welcome back, {user.name.split(' ')[0]}
         </h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        {/* <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Signed in as {user.email} · last sign-in {lastLogin}
-        </p>
+        </p> */}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">

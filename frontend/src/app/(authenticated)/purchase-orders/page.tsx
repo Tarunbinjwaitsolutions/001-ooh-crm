@@ -1,107 +1,290 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { usePurchaseOrders } from '@/modules/purchase-orders/hooks/use-purchase-orders';
-import { Card, Button, Badge, Spinner } from '@/shared/ui';
-import { useAuth } from '@/shared/auth/auth-context';
+import { useMemo, useState } from "react";
+
+import { usePurchaseOrders } from "@/modules/purchase-orders/hooks/usePurchaseOrders";
+import PurchaseOrderFilters from "@/modules/purchase-orders/components/PurchaseOrderFilters";
+import PurchaseOrderTable from "@/modules/purchase-orders/components/PurchaseOrderTable";
+import PurchaseOrderForm from "@/modules/purchase-orders/components/PurchaseOrderForm";
+import PurchaseOrderDetails from "@/modules/purchase-orders/components/PurchaseOrderDetails";
+
+import type {
+  PurchaseOrder,
+  PurchaseOrderFormData,
+} from "@/modules/purchase-orders/types";
 
 export default function PurchaseOrdersPage() {
-  const [search, setSearch] = useState('');
-  const { purchaseOrders, isLoading, error, updateFilter } = usePurchaseOrders();
-  const { hasPermission } = useAuth();
+  const {
+    orders,
+    loading,
+    saving,
+    error,
+    addOrder,
+    editOrder,
+    issueOrder,
+    cancelOrder,
+  } = usePurchaseOrders();
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateFilter('search', search);
-  };
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingOrder, setEditingOrder] =
+    useState<PurchaseOrder | null>(null);
+  const [detailsOrder, setDetailsOrder] =
+    useState<PurchaseOrder | null>(null);
+
+  const filteredOrders = useMemo(() => {
+    const value = search.trim().toLowerCase();
+
+    return orders.filter((order) => {
+      const vendor =
+        typeof order.vendorId === "string"
+          ? order.vendorId
+          : order.vendorId.name;
+
+      const campaign =
+        typeof order.campaignId === "string"
+          ? order.campaignId
+          : order.campaignId.name;
+
+      const searchMatch =
+        !value ||
+        order.poNumber.toLowerCase().includes(value) ||
+        vendor.toLowerCase().includes(value) ||
+        campaign.toLowerCase().includes(value);
+
+      return (
+        searchMatch &&
+        (!status || order.status === status)
+      );
+    });
+  }, [orders, search, status]);
+
+  function openAdd() {
+    setEditingOrder(null);
+    setFormOpen(true);
+  }
+
+  function openEdit(order: PurchaseOrder) {
+    if (order.status !== "Draft") return;
+
+    setEditingOrder(order);
+    setFormOpen(true);
+  }
+
+  function closeForm() {
+    setFormOpen(false);
+    setEditingOrder(null);
+  }
+
+  async function handleSubmit(
+    data: PurchaseOrderFormData,
+  ) {
+    if (editingOrder) {
+      return editOrder(editingOrder._id, data);
+    }
+
+    return addOrder(data);
+  }
+
+  async function handleIssue(order: PurchaseOrder) {
+    if (
+      !window.confirm(
+        `Are you sure you want to issue ${order.poNumber}? Once issued, it cannot be edited.`,
+      )
+    ) {
+      return;
+    }
+
+    await issueOrder(order._id);
+  }
+
+  async function handleCancel(order: PurchaseOrder) {
+    if (
+      !window.confirm(
+        `Are you sure you want to cancel ${order.poNumber}?`,
+      )
+    ) {
+      return;
+    }
+
+    await cancelOrder(order._id);
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Purchase Orders</h1>
-        {hasPermission('purchase_orders.manage') && (
-          <Link href="/purchase-orders/new">
-            <Button variant="primary">Create PO</Button>
-          </Link>
-        )}
-      </div>
+    <main className="min-h-screen bg-[#F7F8FA] p-4 md:p-6">
+      <div className="mx-auto max-w-7xl">
 
-      <Card>
-        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex gap-2">
-          <form onSubmit={handleSearch} className="flex flex-1 gap-2">
-            <input
-              type="text"
-              placeholder="Search by PO Number..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500"
-            />
-            <Button type="submit" variant="secondary">Search</Button>
-          </form>
-          <select 
-            onChange={(e) => updateFilter('status', e.target.value)}
-            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+        {/* Header */}
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-[#1F2937]">
+              Purchase Orders
+            </h1>
+
+            <p className="mt-1 text-sm text-[#667085]">
+              Manage vendor purchase orders
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={openAdd}
+            className="
+              rounded-xl
+              bg-[#A8333B]
+              px-5 py-3
+              text-sm font-bold text-white
+              shadow-sm transition
+              hover:bg-[#F9DADA]
+              hover:text-[#A8333B]
+              focus:outline-none
+              focus:ring-2
+              focus:ring-[#F9DADA]
+            "
           >
-            <option value="">All Statuses</option>
-            <option value="Draft">Draft</option>
-            <option value="Issued">Issued</option>
-            <option value="Accepted">Accepted</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
+            + Create Purchase Order
+          </button>
         </div>
 
-        {isLoading ? (
-          <div className="p-8 flex justify-center"><Spinner /></div>
-        ) : error ? (
-          <div className="p-8 text-center text-red-500">{error}</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
-              <thead className="bg-slate-50 text-slate-900 dark:bg-slate-800/50 dark:text-white">
-                <tr>
-                  <th className="px-4 py-3 font-medium">PO Number</th>
-                  <th className="px-4 py-3 font-medium">Campaign</th>
-                  <th className="px-4 py-3 font-medium">Vendor</th>
-                  <th className="px-4 py-3 font-medium">Amount</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                {purchaseOrders.map((po) => {
-                  const campaignName = typeof po.campaignId === 'object' && po.campaignId !== null ? (po.campaignId as any).name : 'N/A';
-                  const vendorName = typeof po.vendorId === 'object' && po.vendorId !== null ? (po.vendorId as any).name : 'N/A';
+        {/* Summary */}
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Summary
+            title="Total Orders"
+            value={orders.length}
+          />
 
-                  return (
-                    <tr key={po._id || po.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                      <td className="px-4 py-3">
-                        <Link href={`/purchase-orders/${po._id || po.id}`} className="font-medium text-primary hover:underline">
-                          {po.poNumber}
-                        </Link>
-                      </td>
-                      <td className="px-4 py-3">{campaignName}</td>
-                      <td className="px-4 py-3">{vendorName}</td>
-                      <td className="px-4 py-3 font-medium">₹{po.totalAmount}</td>
-                      <td className="px-4 py-3">
-                        <Badge>
-                          {po.status}
-                        </Badge>
-                      </td>
-                    </tr>
-                  );
-                })}
-                {purchaseOrders.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
-                      No purchase orders found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+          <Summary
+            title="Draft"
+            value={
+              orders.filter(
+                (order) => order.status === "Draft",
+              ).length
+            }
+          />
+
+          <Summary
+            title="Issued"
+            value={
+              orders.filter(
+                (order) => order.status === "Issued",
+              ).length
+            }
+          />
+
+          <Summary
+            title="Cancelled"
+            value={
+              orders.filter(
+                (order) => order.status === "Cancelled",
+              ).length
+            }
+          />
+        </div>
+
+        {/* Filters */}
+        <PurchaseOrderFilters
+          search={search}
+          status={status}
+          onSearchChange={setSearch}
+          onStatusChange={setStatus}
+        />
+
+        {/* Error */}
+        {error && (
+          <div className="mt-5 rounded-xl border border-[#F0C7C7] bg-[#FFF8F8] p-4">
+            <p className="text-sm font-semibold text-[#8B2424]">
+              {error}
+            </p>
           </div>
         )}
-      </Card>
+
+        {/* Table */}
+        <div className="mt-6">
+          {loading ? (
+            <Loading />
+          ) : (
+            <PurchaseOrderTable
+              orders={filteredOrders}
+              onView={setDetailsOrder}
+              onEdit={openEdit}
+              onIssue={handleIssue}
+              onCancel={handleCancel}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Form */}
+      {formOpen && (
+        <PurchaseOrderForm
+          order={editingOrder}
+          saving={saving}
+          onClose={closeForm}
+          onSubmit={handleSubmit}
+          onSuccess={closeForm}
+        />
+      )}
+
+      {/* Details */}
+      {detailsOrder && (
+        <PurchaseOrderDetails
+          order={detailsOrder}
+          onClose={() => setDetailsOrder(null)}
+        />
+      )}
+    </main>
+  );
+}
+
+function Summary({
+  title,
+  value,
+}: {
+  title: string;
+  value: number;
+}) {
+  return (
+    <div
+      className="
+        rounded-2xl
+        border border-[#E8E8EC]
+        bg-white
+        p-5
+        shadow-sm
+        transition
+        hover:border-[#F0C7C7]
+        hover:shadow-md
+      "
+    >
+      <p className="text-sm font-medium text-[#667085]">
+        {title}
+      </p>
+
+      <p className="mt-2 text-3xl font-bold text-[#1F2937]">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function Loading() {
+  return (
+    <div className="rounded-2xl border border-[#E8E8EC] bg-white p-16 text-center shadow-sm">
+      <div
+        className="
+          mx-auto h-8 w-8
+          animate-spin
+          rounded-full
+          border-4
+          border-[#F9DADA]
+          border-t-[#A8333B]
+        "
+      />
+
+      <p className="mt-4 text-sm font-medium text-[#667085]">
+        Loading purchase orders...
+      </p>
     </div>
   );
 }
