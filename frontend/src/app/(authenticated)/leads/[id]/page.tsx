@@ -84,7 +84,20 @@ export default function LeadDetailPage() {
   if (isLoading) return <div className="py-12 flex justify-center"><Spinner label="Loading lead details..." /></div>;
   if (error || !lead) return <Alert tone="error" title="Error">Failed to load lead</Alert>;
 
-  const availableNextStatuses: LeadStatus[] = STATUS_TRANSITIONS[lead.status] || [];
+  const ALL_STATUSES: LeadStatus[] = [
+    'New',
+    'Contacted',
+    'Interested',
+    'Qualified',
+    'Proposal Sent',
+    'Negotiation',
+    'Won',
+    'Lost',
+  ];
+
+  const availableNextStatuses: LeadStatus[] = isManagerOrAdmin
+    ? ALL_STATUSES.filter((s) => s !== lead.status)
+    : STATUS_TRANSITIONS[lead.status] || [];
 
   // Calculate Lead Aging (Days since creation)
   const createdDate = new Date(lead.createdAt || lead.receivedAt || Date.now());

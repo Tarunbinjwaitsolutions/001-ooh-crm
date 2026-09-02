@@ -410,9 +410,10 @@ export class LeadsService {
       return lead;
     }
 
-    // 1. Check state transitions map
+    // 1. Check state transitions map (Admins and Managers have override privileges)
+    const isManagerOrAdmin = ctx.user?.role === 'admin' || ctx.user?.role === 'manager';
     const allowed = STATUS_TRANSITIONS[fromStatus] || [];
-    if (!allowed.includes(toStatus)) {
+    if (!isManagerOrAdmin && !allowed.includes(toStatus)) {
       throw new ValidationError(`Invalid status transition from ${fromStatus} to ${toStatus}.`);
     }
 
