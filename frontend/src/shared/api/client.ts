@@ -81,8 +81,11 @@ async function request<T>(
   options: RequestOptions = {},
 ): Promise<T> {
   const headers: Record<string, string> = {};
+  const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
 
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  if (body !== undefined && !isFormData) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   if (!options.skipAuth) {
     const accessToken = sessionStore.getAccessToken();
@@ -92,7 +95,7 @@ async function request<T>(
   const response = await fetch(`${appConfig.apiUrl}${path}`, {
     method,
     headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body: body === undefined ? undefined : isFormData ? (body as BodyInit) : JSON.stringify(body),
     signal: options.signal,
   });
 
