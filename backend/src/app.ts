@@ -69,22 +69,38 @@ app.use('/api/files', fileRoutes);
 
 import { leadRoutes } from './modules/leads/leads.routes.js';
 
-import { vendorRoutes } from './modules/vendors/vendors.routes.js';
-import { siteRoutes } from './modules/sites/sites.routes.js';
-import { campaignRoutes } from './modules/campaigns/campaigns.routes.js';
-import { purchaseOrderRoutes } from './modules/purchase-orders/purchase-orders.routes.js';
+import vendorRoutes from './modules/vendors/vendor.routes.js';
+import siteRoutes from './modules/sites/site.routes.js';
+import campaignRoutes from './modules/campaigns/campaign.routes.js';
+import bookingRoutes from './modules/bookings/booking.routes.js';
+import taskRoutes from './modules/tasks/task.routes.js';
+import escalationRoutes from './modules/escalations/escalation.routes.js';
+import purchaseOrderRoutes from "./modules/purchase-orders/purchase-order.routes.js";
+
+
+import quotationsRoutes, { publicQuotationsRoutes } from './modules/quotations/quotations.routes.js';
 
 // --- Modules ------------------------------------------------------------------
 // G1 — the reference module. Copy its structure.
 app.use('/api/employees', employeeRoutes);
 app.use('/api/leads', leadRoutes);
+
 app.use('/api/vendors', vendorRoutes);
 app.use('/api/sites', siteRoutes);
 app.use('/api/campaigns', campaignRoutes);
+app.use('/api/tasks',taskRoutes);
+app.use('/api', escalationRoutes);
+
 app.use('/api/purchase-orders', purchaseOrderRoutes);
+app.use('/api', bookingRoutes);
+app.use('/api/quotations', quotationsRoutes);
+app.use('/q', publicQuotationsRoutes);
 
 //attendance
 app.use('/api/attendance', attendanceRoutes);
+
+import { reportsRoutes } from './modules/HR/routes/reports.routes.js';
+app.use('/api/reports', reportsRoutes);
 
 // G3 — Leave Types, Quotas & Balances. The legacy leave router is retained
 // only for later migration work and is not mounted as a second G3 API.
@@ -94,6 +110,8 @@ app.use('/api/employees', employeeLeaveBalanceRouter);
 app.use('/api/leave-requests', leaveRoutes);
 app.use('/api/holidays', holidayRoutes);
 
+import candidateRoutes from './modules/candidates/candidates.routes.js';
+app.use('/api/candidates', candidateRoutes);
 
 
 // 404 then the central error handler — both must stay last.

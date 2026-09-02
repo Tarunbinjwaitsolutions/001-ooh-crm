@@ -64,7 +64,9 @@ export default function PurchaseOrderDetailPage() {
               {purchaseOrder.status}
             </Badge>
           </h1>
-          <p className="text-sm text-slate-500 mt-1">Generated on {new Date(purchaseOrder.createdAt).toLocaleDateString()}</p>
+          <p className="text-sm text-slate-500 mt-1">
+            {purchaseOrder.createdAt ? `Generated on ${new Date(purchaseOrder.createdAt).toLocaleDateString()}` : ''}
+          </p>
         </div>
         <div className="flex gap-2">
           {purchaseOrder.status !== 'Draft' && (
@@ -86,24 +88,26 @@ export default function PurchaseOrderDetailPage() {
             <div>
               <dt className="text-slate-500">Vendor</dt>
               <dd className="font-medium text-slate-900 dark:text-white">
-                {typeof purchaseOrder.vendorId === 'object' ? (
+                {typeof purchaseOrder.vendorId === 'object' && purchaseOrder.vendorId !== null ? (
                   <Link href={`/vendors/${(purchaseOrder.vendorId as any)._id}`} className="text-primary hover:underline">
                     {vendorName}
                   </Link>
                 ) : vendorName}
               </dd>
             </div>
-            <div>
-              <dt className="text-slate-500">Duration</dt>
-              <dd className="font-medium text-slate-900 dark:text-white">
-                {new Date(purchaseOrder.startDate).toLocaleDateString()} to {new Date(purchaseOrder.endDate).toLocaleDateString()}
-              </dd>
-            </div>
-            {purchaseOrder.issuedDate && (
+            {purchaseOrder.lineItems && purchaseOrder.lineItems.length > 0 && (
+              <div>
+                <dt className="text-slate-500">Duration</dt>
+                <dd className="font-medium text-slate-900 dark:text-white">
+                  {new Date(purchaseOrder.lineItems[0].from).toLocaleDateString()} to {new Date(purchaseOrder.lineItems[0].to).toLocaleDateString()}
+                </dd>
+              </div>
+            )}
+            {purchaseOrder.issuedAt && (
               <div>
                 <dt className="text-slate-500">Issued On</dt>
                 <dd className="font-medium text-slate-900 dark:text-white">
-                  {new Date(purchaseOrder.issuedDate).toLocaleString()}
+                  {new Date(purchaseOrder.issuedAt).toLocaleString()}
                 </dd>
               </div>
             )}
@@ -141,30 +145,32 @@ export default function PurchaseOrderDetailPage() {
       </div>
 
       <Card className="p-6">
-        <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-4">Line Items ({purchaseOrder.sites.length})</h3>
+        <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-4">Line Items ({purchaseOrder.lineItems?.length || 0})</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
             <thead className="bg-slate-50 text-slate-900 dark:bg-slate-800/50 dark:text-white">
               <tr>
-                <th className="px-4 py-3 font-medium">Site Code</th>
-                <th className="px-4 py-3 font-medium">City</th>
-                <th className="px-4 py-3 font-medium">Base Cost</th>
-                <th className="px-4 py-3 font-medium text-right">Negotiated Rate</th>
+                <th className="px-4 py-3 font-medium">Site</th>
+                <th className="px-4 py-3 font-medium">Dates</th>
+                <th className="px-4 py-3 font-medium text-right">Rate/Day</th>
+                <th className="px-4 py-3 font-medium text-right">Amount</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-              {purchaseOrder.sites.map((item: any, i: number) => {
-                const site = item.siteId;
+              {(purchaseOrder.lineItems || []).map((item: any, i: number) => {
+                const site = typeof item.siteId === 'object' && item.siteId !== null ? item.siteId : null;
                 return (
-                  <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                  <tr key={item._id || i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                     <td className="px-4 py-3 font-medium">
-                      {site.siteCode ? (
+                      {site?.siteCode ? (
                         <Link href={`/sites/${site._id}`} className="text-primary hover:underline">{site.siteCode}</Link>
-                      ) : 'Unknown'}
+                      ) : (typeof item.siteId === 'string' ? item.siteId : 'Outdoor Site')}
                     </td>
-                    <td className="px-4 py-3">{site.city || 'N/A'}</td>
-                    <td className="px-4 py-3">₹{site.baseCostPerDay || '0'}</td>
-                    <td className="px-4 py-3 text-right font-medium">₹{item.negotiatedRate}</td>
+                    <td className="px-4 py-3">
+                      {new Date(item.from).toLocaleDateString()} – {new Date(item.to).toLocaleDateString()} ({item.days || '-'}d)
+                    </td>
+                    <td className="px-4 py-3 text-right">₹{item.negotiatedRatePerDay || '0'}</td>
+                    <td className="px-4 py-3 text-right font-medium text-slate-900 dark:text-white">₹{item.amount}</td>
                   </tr>
                 );
               })}

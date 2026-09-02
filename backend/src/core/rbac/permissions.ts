@@ -47,6 +47,7 @@ export const PERMISSIONS = [
   'leads.claim',
   'leads.update',
   'leads.assign',
+  'leads.log_call',
 
   // Track B — Proposals & quotations
   'quotations.view',
@@ -91,6 +92,9 @@ export const PERMISSIONS = [
   'leave.self',
   'leave.manage',
   'holiday.manage',
+  'reports.view',
+  'candidates.view',
+  'candidates.manage',
 
   // Track H — Audit
   'audit.view',
@@ -112,6 +116,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'leads.create',
     'leads.update',
     'leads.assign',
+    'leads.log_call',
     'quotations.view',
     'quotations.create',
     'quotations.update',
@@ -129,6 +134,9 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'employees.view',
     'attendance.view_team',
     'leave.manage',
+    'reports.view',
+    'candidates.view',
+    'candidates.manage',
   ],
 
   sales_agent: [
@@ -137,6 +145,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'leads.create',
     'leads.claim',
     'leads.update',
+    'leads.log_call',
     'quotations.view',
     'quotations.create',
     'quotations.update',
@@ -188,6 +197,9 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'employees.sensitive',
     'attendance.view_team',
     'leave.manage',
+    'reports.view',
+    'candidates.view',
+    'candidates.manage',
   ],
 
   employee: [...BASE, 'tasks.view'],

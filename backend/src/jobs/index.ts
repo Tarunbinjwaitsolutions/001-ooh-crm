@@ -2,6 +2,7 @@ import cron, { type ScheduledTask } from 'node-cron';
 
 import { config } from '../config/index.js';
 import { withJobLock } from './job-runner.js';
+import { escalationJobLocked } from './escalation.job.js';
 
 export { withJobLock } from './job-runner.js';
 
@@ -31,17 +32,13 @@ interface JobDefinition {
 }
 
 const JOBS: JobDefinition[] = [
-  // ---------------------------------------------------------------------
-  // Add your job here. Example — delete this once a real job lands:
-  //
-  // {
-  //   name: 'escalation',
-  //   schedule: '*/15 * * * *',
-  //   lockTtlSeconds: 15 * 60,
-  //   description: 'D4 — escalate overdue tasks up the reporting hierarchy',
-  //   run: escalationJob,
-  // },
-  // ---------------------------------------------------------------------
+  {
+    name: 'escalation',
+    schedule: '*/15 * * * *',
+    lockTtlSeconds: 15 * 60,
+    description: 'D4 — escalate overdue tasks',
+    run: escalationJobLocked,
+  },
   {
     name: 'heartbeat',
     // 03:00 daily. Proves the scheduler is alive without doing any work.
