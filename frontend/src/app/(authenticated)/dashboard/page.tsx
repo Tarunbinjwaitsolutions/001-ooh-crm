@@ -30,28 +30,28 @@ export default function DashboardPage() {
           <AttendanceWidget />
         </div>
         <div className="sm:col-span-2 grid gap-4 grid-cols-1 sm:grid-cols-2">
-        <Card>
-          <h2 className="text-sm font-medium text-slate-900 dark:text-slate-100">Your role</h2>
-          <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-            {ROLE_LABELS[user.role] ?? user.role}
-          </p>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            Role and permissions come from the server on every request — changing them in the
-            browser does nothing.
-          </p>
-        </Card>
+          <Card>
+            <h2 className="text-sm font-medium text-slate-900 dark:text-slate-100">Your role</h2>
+            <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+              {ROLE_LABELS[user.role] ?? user.role}
+            </p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              Role and permissions come from the server on every request — changing them in the
+              browser does nothing.
+            </p>
+          </Card>
 
-        <Card>
-          <h2 className="text-sm font-medium text-slate-900 dark:text-slate-100">
-            Permissions ({user.permissions.length})
-          </h2>
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {user.permissions.map((permission) => (
-              <Badge key={permission}>{permission}</Badge>
-            ))}
-          </div>
-        </Card>
-      </div>
+          <Card>
+            <h2 className="text-sm font-medium text-slate-900 dark:text-slate-100">
+              Permissions ({user.permissions.length})
+            </h2>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {user.permissions.map((permission) => (
+                <Badge key={permission}>{permission}</Badge>
+              ))}
+            </div>
+          </Card>
+        </div>
       </div>
 
       <EmptyState
@@ -60,4 +60,4 @@ export default function DashboardPage() {
       />
     </div>
   );
-}
+}      

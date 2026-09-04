@@ -114,7 +114,7 @@ export function AttendanceOverviewWidget({
   showControls = true,
 }: AttendanceOverviewWidgetProps) {
   const today = new Date();
-  
+
   // Normalize date range props with backward compatibility
   const initialFromMonth = propFromMonth ?? propMonth ?? today.getMonth() + 1;
   const initialFromYear = propFromYear ?? propYear ?? today.getFullYear();
@@ -169,7 +169,7 @@ export function AttendanceOverviewWidget({
       const dow = curr.getDay();
       const isSunday = dow === 0;
       const dateStr = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      
+
       const lastDayOfThisMonth = new Date(y, m, 0).getDate();
       const isFirst = d === 1;
       const isLast = d === lastDayOfThisMonth;
@@ -401,11 +401,11 @@ export function AttendanceOverviewWidget({
               {/* Legend with exact company tokens */}
               <div className="flex flex-wrap items-center gap-3 text-xs">
                 <div className="flex items-center gap-1.5">
-                  <span className="w-3.5 h-3.5 rounded-[4px] bg-[#6E1D1D] shadow-xs" />
+                  <span className="w-3.5 h-3.5 rounded-[4px] bg-[#A3D9A1] shadow-xs" />
                   <span className="text-slate-700 font-medium">Present (Full Day)</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="w-3.5 h-3.5 rounded-[4px] bg-[#F39C12] shadow-xs" />
+                  <span className="w-3.5 h-3.5 rounded-[4px]  bg-[#F7DD72] shadow-xs" />
                   <span className="text-slate-700 font-medium">Half-Day / Late</span>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -413,7 +413,7 @@ export function AttendanceOverviewWidget({
                   <span className="text-slate-700 font-medium">Absent</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="w-3.5 h-3.5 rounded-[4px] bg-sky-500 shadow-xs" />
+                  <span className="w-3.5 h-3.5 rounded-[4px] bg-[#F5C177]  shadow-xs" />
                   <span className="text-slate-700 font-medium">Leave</span>
                 </div>
                 <div className="flex items-center gap-1.5">
